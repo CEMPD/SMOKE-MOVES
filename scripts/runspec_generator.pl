@@ -19,7 +19,11 @@
 #                                   onroadscc output to Yes.
 #  Huiyan (NESCAUM)  18 Oct  v0.3 : Removed roadtype=1 for RPD and
 #                                   roadtype 2-5 for RPV and RPP
-#  Huiyan (NESCAUM)  18 Oct  v0.31: Update not to use negative temperautre to create database name 
+#  Huiyan (NESCAUM)  18 Oct  v0.31: Update not to use negative temperautre to create database name
+#  Beidler (CSC)     29 Mar  v0.31: Added VOC and Hg to pollutants and refueling process ids for MOVES 2010b 
+#  Beidler (CSC)     18 Jan  v0.32: Change MET input data format to match new MET4MOVES output
+#                                   Changed run control format to accomadate both new input file and old
+#  C. Allen (CSC)    26 Mar 2013 v0.33: Added support for new gridded format RPP metfiles
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -52,7 +56,7 @@ $GenCSH = ($#ARGV > 1 && $ARGV[2] eq "-csh") ? 1 : 0;
 
 # run control variables
 my ($line, $i, $j, $ip, $ic, $jj, @line);
-my ($dbhost, $batchrun, $outdir, $moveshome, $modelyear, $User_polls, $dayofweek, $MetFile);
+my ($dbhost, $batchrun, $outdir, $moveshome, $modelyear, $User_polls, $dayofweek, $MetFile, $RPMetFile);
 my (@User_polls, @dayofweek);
 my ($pollsFlg, $WeekDayFlag, $WeekEndFlag);
 
@@ -80,6 +84,7 @@ $default_dummy = "filename_dummy_holder.csv";
 #     30     NH3                   Ammonia (NH3)
 #     32     NO        NOX         Nitrogen Oxide
 #     33     NO2       NOX         Nitrogen Dioxide
+#     34     HONO      NOX         Nitrous acid
 #     31     SO2       Tot Energy  Sulfur Dioxide (SO2)
 #     100    TOTPM10               Primary Exhaust PM10  - Total
 #     101    OCARB10   OCARB2_5    Primary PM10 - Organic Carbon
@@ -93,13 +98,10 @@ $default_dummy = "filename_dummy_holder.csv";
 #     115    SO4_2_5   Tot Energy  Primary PM2.5 - Sulfate Particulate
 #     116    BRAKE2_5              Primary PM2.5 - Brakewear Particulate
 #     117    TIRE2_5               Primary PM2.5 - Tirewear Particulate
-#     91                           Total Energy Consumption
-#     92                           Petroleum Energy Consumption
-#     93                           Fossil Fuel Energy Consumption
+#     91     TENERGY               Total Energy Consumption
 #     5      CH4                   Methane (CH4)
 #     6      N20                   Nitrous Oxide (N2O)
 #     90     CO2       Tot Energy  Atmospheric CO2
-#     98     CO2EQ                 CO2 Equivalent
 #     20     BENZ      VOC         Benzene
 #     21     ETHA      VOC         Ethanol
 #     22     MTBE      VOC         MTBE
@@ -108,18 +110,31 @@ $default_dummy = "filename_dummy_holder.csv";
 #     25     FORM      VOC         Formaldehyde
 #     26     ACET      VOC         Acetaldehyde
 #     27     ACRO      VOC         Acrolein
-
+#     40     TRMEPN224 VOC         2,2,4-Trimethylpentane 
+#     41     ETHYLBENZ VOC         Ethyl Benzene
+#     42     HEXANE    VOC         Hexane
+#     43     PROPIONAL VOC         Propionaldehyde
+#     44     STYRENE   VOC         Styrene
+#     45     TOLUENE   VOC         Toluene
+#     46     XYL       VOC         Xylene
+#     60     HG                    Mercury Elemental Gaseous
+#     61     HGIIGAS               Mercury Divalen Gaseous
+#     62     PHGI                  Mercury Particulate
+  
 my ( @pollOptions, @pollsList, @pollsListID, @pollsListName);
 my ( @pollsByOptionOZONE, @pollsByOptionTOXICS, @pollsByOptionPM, @pollsByOptionGHG );
 my ( @pollsOutList );
 
-@pollsList = ( "THC", "NMHC", "NMOG", "TOG", "VOC", "CO", "NOX", "NH3", "NO", "NO2",
+@pollsList = ( "THC", "NMHC", "NMOG", "TOG", "VOC", "CO", "NOX", "NH3", "NO", "NO2", "HONO",
                "SO2", "TOTPM10", "OCARB10", "ECARB10", "SO4_10", "BRAKE10", "TIRE10", "TOTPM2_5", "OCARB2_5", "ECARB2_5",
-               "SO4_2_5", "BRAKE2_5", "TIRE2_5", "CH4", "N20", "CO2", "CO2EQ", "BENZ", "ETHA", "MTBE",
-               "NAPH", "BUTA", "FORM", "ACET", "ACRO", "TENERGY");
+               "SO4_2_5", "BRAKE2_5", "TIRE2_5", "TENERGY", "CH4", "N20", "CO2", "BENZ", "ETHA", "MTBE",
+               "NAPH", "BUTA", "FORM", "ACET", "ACRO", 
+               "TRMEPN224", "ETHYLBENZ", "HEXANE", "PROPIONAL", "STYRENE", "TOLUENE", "XYL", "HG", "HGIIGAS", "PHGI" );
 
-@pollsListID = ( 1, 79, 80, 86, 87, 2, 3, 30, 32, 33, 31, 100, 101, 102, 105, 106, 107, 110, 111,
-               112, 115, 116, 117, 91, 92, 93, 5, 6, 90, 98, 20, 21, 22, 23, 24, 25, 26, 27);
+
+@pollsListID = ( 1, 79, 80, 86, 87, 2, 3, 30, 32, 33, 34, 31, 100, 101, 102, 105, 106, 107, 110, 111,
+               112, 115, 116, 117, 91, 5, 6, 90, 20, 21, 22, 23, 24, 25, 26, 27, 40, 41, 42, 43, 44, 45, 46, 60, 61, 62 );
+               
 
 @pollsListName = ("Total Gaseous Hydrocarbons",
                  "Non-Methane Hydrocarbons",
@@ -131,6 +146,7 @@ my ( @pollsOutList );
                  "Ammonia (NH3)",
                  "Nitrogen Oxide",
                  "Nitrogen Dioxide",
+                 "Nitrous acid",
                  "Sulfur Dioxide (SO2)",
                  "Primary Exhaust PM10  - Total",
                  "Primary PM10 - Organic Carbon",
@@ -145,12 +161,9 @@ my ( @pollsOutList );
                  "Primary PM2.5 - Brakewear Particulate",
                  "Primary PM2.5 - Tirewear Particulate",
                  "Total Energy Consumption",
-                 "Petroleum Energy Consumption",
-                 "Fossil Fuel Energy Consumption",
                  "Methane (CH4)",
                  "Nitrous Oxide (N2O)",
                  "Atmospheric CO2",
-                 "CO2 Equivalent",
                  "Benzene",
                  "Ethanol",
                  "MTBE",
@@ -158,21 +171,32 @@ my ( @pollsOutList );
                  "1,3-Butadiene",
                  "Formaldehyde",
                  "Acetaldehyde",
-                 "Acrolein");
+                 "Acrolein",
+                 "2,2,4-Trimethylpentane", 
+                 "Ethyl Benzene",
+                 "Hexane",
+                 "Propionaldehyde",
+                 "Styrene",
+                 "Toluene",
+                 "Xylene",
+                 "Mercury Elemental Gaseous",
+                 "Mercury Divalent Gaseous",
+                 "Mercury Particulate");
+
 
 @pollOptions = ("OZONE", "PM", "TOXICS", "GHG");
 
 #  A subset of MOVES2010 pollutants are generated for each user option specified.
 #  Taken from the design document of Task4, Table 4.
-@pollsByOptionOZONE = (1,5,79,80,86,87,2,3,32,33);
-@pollsByOptionTOXICS = (1,5,79,80,86,87,20,22,23,24,25,26,27,100,101,102,105,91);
-@pollsByOptionPM = (1,5,79,80,86,87,3,30,32,33,31,100,101,102,105,106,107,110,111,112,115,116,117,91,20);
-@pollsByOptionGHG = (90,91,92,93,5,6,98);
+@pollsByOptionOZONE = (1,5,79,80,86,87,2,3,32,33,34);
+@pollsByOptionTOXICS = (1,5,79,80,86,87,20,22,23,24,25,26,27,100,101,102,105,91,40,41,42,43,44,45,46,60,61,62);
+@pollsByOptionPM = (1,5,79,80,86,87,3,30,32,33,34,31,100,101,102,105,106,107,110,111,112,115,116,117,91,20);
+@pollsByOptionGHG = (90,91,5,6);
 
 # Process Types ------------------------------------------------------------------
 my (@processID, %processName, %PollProc_tablemap);
 
-@processID = (1,2,9,10,11,12,13,15,16,17,90);    # 18,19 refueling not included
+@processID = (1,2,9,10,11,12,13,15,16,17,18,19,90);
 $processName{"01"} = "Running Exhaust";
 $processName{"02"} = "Start Exhaust";
 $processName{"09"} = "Brakewear";
@@ -183,8 +207,8 @@ $processName{"13"} = "Evap Fuel Leaks";
 $processName{"15"} = "Crankcase Running Exhaust";
 $processName{"16"} = "Crankcase Start Exhaust"; 
 $processName{"17"} = "Crankcase Extended Idle Exhaust"; 
-#$processName{"18"} = "Refueling Displacement Vapor Loss";   #exclude refueling
-#$processName{"19"} = "Refueling Spillage Loss";   #exclude refueling
+$processName{"18"} = "Refueling Displacement Vapor Loss";
+$processName{"19"} = "Refueling Spillage Loss";
 $processName{"90"} = "Extended Idle Exhaust";
 
 # Process Types ------------------------------------------------------------------
@@ -201,8 +225,8 @@ $PollProc_tablemap{"113"} = "110";
 $PollProc_tablemap{"115"} = "100";
 $PollProc_tablemap{"116"} = "010";
 $PollProc_tablemap{"117"} = "010";
-#$PollProc_tablemap{"118"} = "100";  #exclude refueling
-#$PollProc_tablemap{"119"} = "100";  #exclude refueling
+$PollProc_tablemap{"118"} = "100";
+$PollProc_tablemap{"119"} = "100";
 $PollProc_tablemap{"190"} = "010";
 $PollProc_tablemap{"201"} = "100";
 $PollProc_tablemap{"202"} = "010";
@@ -224,8 +248,8 @@ $PollProc_tablemap{"513"} = "110";
 $PollProc_tablemap{"515"} = "100";
 $PollProc_tablemap{"516"} = "010";
 $PollProc_tablemap{"517"} = "010";
-#$PollProc_tablemap{"518"} = "100";  #exclude refueling
-#$PollProc_tablemap{"519"} = "100";  #exclude refueling
+$PollProc_tablemap{"518"} = "100";
+$PollProc_tablemap{"519"} = "100";
 $PollProc_tablemap{"590"} = "010";
 $PollProc_tablemap{"601"} = "100";
 $PollProc_tablemap{"602"} = "010";
@@ -239,8 +263,8 @@ $PollProc_tablemap{"2013"} = "110";
 $PollProc_tablemap{"2015"} = "100";
 $PollProc_tablemap{"2016"} = "010";
 $PollProc_tablemap{"2017"} = "010";
-#$PollProc_tablemap{"2018"} = "100";  #exclude refueling
-#$PollProc_tablemap{"2019"} = "100";  #exclude refueling
+$PollProc_tablemap{"2018"} = "100";
+$PollProc_tablemap{"2019"} = "100";
 $PollProc_tablemap{"2090"} = "010";
 $PollProc_tablemap{"2101"} = "100";
 $PollProc_tablemap{"2102"} = "010";
@@ -250,8 +274,8 @@ $PollProc_tablemap{"2113"} = "110";
 $PollProc_tablemap{"2115"} = "100";
 $PollProc_tablemap{"2116"} = "010";
 $PollProc_tablemap{"2117"} = "010";
-#$PollProc_tablemap{"2118"} = "100";  #exclude refueling
-#$PollProc_tablemap{"2119"} = "100";  #exclude refueling
+$PollProc_tablemap{"2118"} = "100";
+$PollProc_tablemap{"2119"} = "100";
 $PollProc_tablemap{"2190"} = "010";
 $PollProc_tablemap{"2201"} = "100";
 $PollProc_tablemap{"2202"} = "010";
@@ -261,8 +285,8 @@ $PollProc_tablemap{"2213"} = "110";
 $PollProc_tablemap{"2215"} = "100";
 $PollProc_tablemap{"2216"} = "010";
 $PollProc_tablemap{"2217"} = "010";
-#$PollProc_tablemap{"2218"} = "100";  #exclude refueling
-#$PollProc_tablemap{"2219"} = "100";  #exclude refueling
+$PollProc_tablemap{"2218"} = "100";
+$PollProc_tablemap{"2219"} = "100";
 $PollProc_tablemap{"2290"} = "010";
 $PollProc_tablemap{"2301"} = "100";
 $PollProc_tablemap{"2302"} = "010";
@@ -272,8 +296,8 @@ $PollProc_tablemap{"2313"} = "110";
 $PollProc_tablemap{"2315"} = "100";
 $PollProc_tablemap{"2316"} = "010";
 $PollProc_tablemap{"2317"} = "010";
-#$PollProc_tablemap{"2318"} = "100";  #exclude refueling
-#$PollProc_tablemap{"2319"} = "100";  #exclude refueling
+$PollProc_tablemap{"2318"} = "100";
+$PollProc_tablemap{"2319"} = "100";
 $PollProc_tablemap{"2390"} = "010";
 $PollProc_tablemap{"2401"} = "100";
 $PollProc_tablemap{"2402"} = "010";
@@ -323,6 +347,72 @@ $PollProc_tablemap{"3315"} = "100";
 $PollProc_tablemap{"3316"} = "010";
 $PollProc_tablemap{"3317"} = "010";
 $PollProc_tablemap{"3390"} = "010";
+$PollProc_tablemap{"3401"} = "100";
+$PollProc_tablemap{"3402"} = "010";
+$PollProc_tablemap{"3415"} = "100";
+$PollProc_tablemap{"3416"} = "010";
+$PollProc_tablemap{"3417"} = "010";
+$PollProc_tablemap{"3490"} = "010";
+$PollProc_tablemap{"4001"} = "100";
+$PollProc_tablemap{"4002"} = "010";
+$PollProc_tablemap{"4011"} = "110";
+$PollProc_tablemap{"4012"} = "101";
+$PollProc_tablemap{"4013"} = "110";
+$PollProc_tablemap{"4015"} = "100";
+$PollProc_tablemap{"4016"} = "010";
+$PollProc_tablemap{"4017"} = "010";
+$PollProc_tablemap{"4090"} = "010";
+$PollProc_tablemap{"4101"} = "100";
+$PollProc_tablemap{"4102"} = "010";
+$PollProc_tablemap{"4111"} = "110";
+$PollProc_tablemap{"4112"} = "101";
+$PollProc_tablemap{"4113"} = "110";
+$PollProc_tablemap{"4115"} = "100";
+$PollProc_tablemap{"4116"} = "010";
+$PollProc_tablemap{"4117"} = "010";
+$PollProc_tablemap{"4190"} = "010";
+$PollProc_tablemap{"4201"} = "100";
+$PollProc_tablemap{"4202"} = "010";
+$PollProc_tablemap{"4211"} = "110";
+$PollProc_tablemap{"4212"} = "101";
+$PollProc_tablemap{"4213"} = "110";
+$PollProc_tablemap{"4215"} = "100";
+$PollProc_tablemap{"4216"} = "010";
+$PollProc_tablemap{"4217"} = "010";
+$PollProc_tablemap{"4290"} = "010";
+$PollProc_tablemap{"4301"} = "100";
+$PollProc_tablemap{"4302"} = "010";
+$PollProc_tablemap{"4315"} = "100";
+$PollProc_tablemap{"4316"} = "010";
+$PollProc_tablemap{"4317"} = "010";
+$PollProc_tablemap{"4390"} = "010";
+$PollProc_tablemap{"4401"} = "100";
+$PollProc_tablemap{"4402"} = "010";
+$PollProc_tablemap{"4415"} = "100";
+$PollProc_tablemap{"4416"} = "010";
+$PollProc_tablemap{"4417"} = "010";
+$PollProc_tablemap{"4490"} = "010";
+$PollProc_tablemap{"4501"} = "100";
+$PollProc_tablemap{"4502"} = "010";
+$PollProc_tablemap{"4511"} = "110";
+$PollProc_tablemap{"4512"} = "101";
+$PollProc_tablemap{"4513"} = "110";
+$PollProc_tablemap{"4515"} = "100";
+$PollProc_tablemap{"4516"} = "010";
+$PollProc_tablemap{"4517"} = "010";
+$PollProc_tablemap{"4590"} = "010";
+$PollProc_tablemap{"4601"} = "100";
+$PollProc_tablemap{"4602"} = "010";
+$PollProc_tablemap{"4611"} = "110";
+$PollProc_tablemap{"4612"} = "101";
+$PollProc_tablemap{"4613"} = "110";
+$PollProc_tablemap{"4615"} = "100";
+$PollProc_tablemap{"4616"} = "010";
+$PollProc_tablemap{"4617"} = "010";
+$PollProc_tablemap{"4690"} = "010";
+$PollProc_tablemap{"6001"} = "100";
+$PollProc_tablemap{"6101"} = "100";
+$PollProc_tablemap{"6201"} = "100";
 $PollProc_tablemap{"7901"} = "100";
 $PollProc_tablemap{"7902"} = "010";
 $PollProc_tablemap{"7911"} = "110";
@@ -331,8 +421,8 @@ $PollProc_tablemap{"7913"} = "110";
 $PollProc_tablemap{"7915"} = "100";
 $PollProc_tablemap{"7916"} = "010";
 $PollProc_tablemap{"7917"} = "010";
-#$PollProc_tablemap{"7918"} = "100";  #exclude refueling
-#$PollProc_tablemap{"7919"} = "100";  #exclude refueling
+$PollProc_tablemap{"7918"} = "100";
+$PollProc_tablemap{"7919"} = "100";
 $PollProc_tablemap{"7990"} = "010";
 $PollProc_tablemap{"8001"} = "100";
 $PollProc_tablemap{"8002"} = "010";
@@ -342,8 +432,8 @@ $PollProc_tablemap{"8013"} = "110";
 $PollProc_tablemap{"8015"} = "100";
 $PollProc_tablemap{"8016"} = "010";
 $PollProc_tablemap{"8017"} = "010";
-#$PollProc_tablemap{"8018"} = "100";  #exclude refueling
-#$PollProc_tablemap{"8019"} = "100";  #exclude refueling
+$PollProc_tablemap{"8018"} = "100";
+$PollProc_tablemap{"8019"} = "100";
 $PollProc_tablemap{"8090"} = "010";
 $PollProc_tablemap{"8601"} = "100";
 $PollProc_tablemap{"8602"} = "010";
@@ -353,8 +443,8 @@ $PollProc_tablemap{"8613"} = "110";
 $PollProc_tablemap{"8615"} = "100";
 $PollProc_tablemap{"8616"} = "010";
 $PollProc_tablemap{"8617"} = "010";
-#$PollProc_tablemap{"8618"} = "100";  #exclude refueling
-#$PollProc_tablemap{"8619"} = "100";  #exclude refueling
+$PollProc_tablemap{"8618"} = "100";
+$PollProc_tablemap{"8619"} = "100";
 $PollProc_tablemap{"8690"} = "010";
 $PollProc_tablemap{"8701"} = "100";
 $PollProc_tablemap{"8702"} = "010";
@@ -364,8 +454,8 @@ $PollProc_tablemap{"8713"} = "110";
 $PollProc_tablemap{"8715"} = "100";
 $PollProc_tablemap{"8716"} = "010";
 $PollProc_tablemap{"8717"} = "010";
-#$PollProc_tablemap{"8718"} = "100";  #exclude refueling
-#$PollProc_tablemap{"8719"} = "100";  #exclude refueling
+$PollProc_tablemap{"8718"} = "100";
+$PollProc_tablemap{"8719"} = "100";
 $PollProc_tablemap{"8790"} = "010";
 $PollProc_tablemap{"9001"} = "100";
 $PollProc_tablemap{"9002"} = "010";
@@ -373,15 +463,6 @@ $PollProc_tablemap{"9090"} = "010";
 $PollProc_tablemap{"9101"} = "100";
 $PollProc_tablemap{"9102"} = "010";
 $PollProc_tablemap{"9190"} = "010";
-$PollProc_tablemap{"9201"} = "100";
-$PollProc_tablemap{"9202"} = "010";
-$PollProc_tablemap{"9290"} = "010";
-$PollProc_tablemap{"9301"} = "100";
-$PollProc_tablemap{"9302"} = "010";
-$PollProc_tablemap{"9390"} = "010";
-$PollProc_tablemap{"9801"} = "100";
-$PollProc_tablemap{"9802"} = "010";
-$PollProc_tablemap{"9890"} = "010";
 $PollProc_tablemap{"10001"} = "100";
 $PollProc_tablemap{"10002"} = "010";
 $PollProc_tablemap{"10015"} = "100";
@@ -447,7 +528,8 @@ $PollProc_tablemap{"11710"} = "100";
 #          MODELYEAR	= 2005
 #          POLLUTANTS 	= OZONE, TOXICS, PM, GHG
 #          DAYOFWEEK	= WEEKDAY, WEEKEND
-#          METFILE	= c:\movesdata\cenrap\2005\2005_repcounty_met.in
+#          METFILE	= c:\movesdata\cenrap\2005\MOVES_RH_2005.csv
+#          RPMETFILE    = c:\movesdata\cenrap\2005\2005_repcounty_met.in
 
 # open run control file
 open(CONTROLFILE, "$RunControlFile") or die "Unable to open run Control file: $RunControlFile\n";
@@ -474,6 +556,7 @@ while (<CONTROLFILE>)
         if (uc trim($line[0]) eq "POLLUTANTS")       { $User_polls       = uc trim($line[1]); last NXTLINE; }
         if (uc trim($line[0]) eq "DAYOFWEEK")        { $dayofweek        = uc trim($line[1]); last NXTLINE; }
         if (uc trim($line[0]) eq "METFILE")          { $MetFile          = trim($line[1]); last NXTLINE; }
+	if (uc trim($line[0]) eq "RPMETFILE")        { $RPMetFile        = trim($line[1]); last NXTLINE; }
     }
 }
 
@@ -603,177 +686,266 @@ while (<REPFILE>)
 # Read the met4moves input met file and call routines to generate RunSpec files and DataImport files
 #=========================================================================================================
 
-# open the met data
+# open the met data for RPD and RPV
 open(METFILE, "$MetFile") or die "Unable to open met file: $MetFile\n";
-my ($VV_TempInc, $RD_TempInc, $RV_TempInc, $temperature);
-my ($RDminT, $RDmaxT, $RVminT, $RVmaxT);
-my ($t, $numRDruns, $cntRDtemps, $cntRVtemps, @RDtemps, @RVtemps);
-my ($cntMet, $MetRep, $MetMonth, $MetProfId, $MetRH,%fipsList);
-my ($MetMin, $MetMax, @MetTempProf);
+my ($MetRep, $MetMonth, $MetRH, %fipsList);
+my ($cntTemp, $repTemp, $prevCty, $prevMonth, @RDtemps, $RDcnt, $t);
 my ($outputDB, $scenarioID, @scenarioIDList);
 my ($cntyidx,$flg,$ref,$pp,$process,$code,$tID,$codeOut,$pollRef,$cnty);
 
-# --- read met data records ==============================
+# --- read met data records for RPD and RPV ==============================
 #
-$cntMet = 0;
+$prevCty = '';
+$cntTemp = 0;
+$RDcnt = 0;
 while (<METFILE>)
 {
-    chomp;
-    $line = trim($_);
-    @line = split(/\s+/, trim($_));
+	chomp;
+	$line = trim($_);
+	@line = split(/\s+/, trim($_));
 
-# read header record for temperature bin increments
-    NXTMET:
-    {
-    if (($line eq "") || (substr($line, 0, 1) eq "#"))    { last NXTMET; }
-    if (uc trim($line[0]) eq "PP_TEMP_INCREMENT")         { $VV_TempInc = trim($line[1]); last NXTMET;  }
-    if (uc trim($line[0]) eq "PD_TEMP_INCREMENT")         { $RD_TempInc = trim($line[1]); last NXTMET;  }
-    if (uc trim($line[0]) eq "PV_TEMP_INCREMENT")         { $RV_TempInc = trim($line[1]); last NXTMET;  }
-    ++$cntMet;
-
-    # split data fields, determine record types, and parse each appropriately
-    # min/max record:  fips, fuelMonth, key, rh, tmin, tmax
-    # diurnal record:  fips, fuelMonth, key, rh, temp1, temp2, ...temp24
-
-    @line = split(/\s+/, $_);
-    $MetRep = substr(trim($line[0]),1,5);
-    $cntyidx = &getRepCnty();
-	if ($cntyidx <= 0) {die "ERROR : Repcounty input file incomplete.  Missing county:  $MetRep\nREPCOUNTY packets must exist for all FIPS in input met file.\n";}
-    $MetMonth = trim($line[1]);
-    $MetProfId = trim($line[2]);
-    $MetRH = $line[3];
-    $outputDB = $MetRep . "_" . $modelyear . $pollsFlg;
-    $fipsList{$MetRep} = 1;
-
-    if ($MetProfId eq "min_max" )
-    {
-	$MetMin = $line[4];
-	$MetMax = $line[5];
-
-#       --- determine the temperature bins between min/max temperatures
-        &setMinMax();
-#
-#       --- rate per distance runs --- ======================================================================
-        for($t=1;$t<=$numRDruns;++$t)
+	# read header record for temperature bin increments for RPD and RPV
+	NXTMET:
 	{
+		if (($line eq "") || (substr($line, 0, 1) eq "#") || (substr($line, 0, 3) eq "Ref"))    { last NXTMET; }
 
-             if(int($RDtemps[$t][1]) lt 0)
-             {
-                  $scenarioID = "RD_".$MetRep . "_" . $modelyear."_".$MetMonth ."_Tn". abs($RDtemps[$t][1])."_". int($RDtemps[$t][24]);
-             }
-             else
-	     {
-                  $scenarioID = "RD_".$MetRep . "_" . $modelyear."_".$MetMonth ."_T". int($RDtemps[$t][1])."_". int($RDtemps[$t][24]);
-             }
+		# split data fields, determine record types, and parse each appropriately
 
-#	   --- write the meteorology MOVES input csv formatted file
-	   $fileout = $outdir .  $scenarioID . "_zmh.csv";
-           open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	   printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
+		@line = split(',', $_);
+		$MetRep = trim($line[0]);
 
-	   for($i=0;$i<=23;++$i) 
-	   { 
-              printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i+1, $RDtemps[$t][$i+1], $MetRH;
-	   }
-           close(OUTFL);
+		# Fix FIPS length to five characters
+		while (length($MetRep) < 5) { $MetRep = "0" . $MetRep; } 
+		while (length($MetRep) > 5) { $MetRep = substr($MetRep, 1); } 
+			
+		$cntyidx = &getRepCnty();
+		if ($cntyidx <= 0) {die "ERROR : Repcounty input file incomplete.  Missing county:  $MetRep\nREPCOUNTY packets must exist for all FIPS in input met file.\n";}
 
-#          --- write the data importer for this runspec 
-	   $fileout = $outdir . $scenarioID . "_imp.xml";
-           open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	   printf IMPFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -i \"%s\"%s%s", 
-                                                                    substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
-	   printf IMPFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"importlog_".$batchrun."_".$modelyear.".txt";
-	   RD_writeDataImporter();
-	   close(OUTFL);
+		$MetMonth = trim($line[1]);
+		$MetRH = $line[2];
+		$outputDB = $MetRep . "_" . $modelyear . $pollsFlg;
+		$fipsList{$MetRep} = 1;
 
-#          --- write the runspec file
-	   $fileout = $outdir . "/".  $scenarioID . "_mrs.xml";
-           open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	   printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
-                                                                    substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
-	   printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
-	   RD_writeRunSpec();
-	   close(OUTFL);
-	}
+		# Set initial RPD output file data
+		if (($cntTemp eq 0) && ($prevCty eq '')) { $RDtemps[$RDcnt][$cntTemp] = [$MetRep, $MetMonth]; $prevCty = $MetRep; $prevMonth = $MetMonth; }
 
-#        --- rate per vehicle runs --- ========================================================================
-        for($t=1;$t<=$cntRVtemps;++$t)
+		$repTemp = $line[5];
+
+		# Reset to next RPD output file data
+		if (($MetRep ne $prevCty) || ($MetMonth ne $prevMonth) || ($cntTemp eq 24))
+		{
+			# Store number of temperatures to be written for set
+			$RDtemps[$RDcnt][0][2] = $cntTemp;
+ 
+			$cntTemp = 0;
+			$prevCty = $MetRep;
+			$prevMonth = $MetMonth;
+
+			# Move to next set of RPD output data
+			++$RDcnt;
+			$RDtemps[$RDcnt][$cntTemp] = [$MetRep, $MetMonth]
+		}
+
+		++$cntTemp;
+
+		# Store RPD output file data for temperature and RH
+		$RDtemps[$RDcnt][$cntTemp] = [$repTemp, $MetRH]; 
+
+		#        --- rate per vehicle runs --- ========================================================================
+		if(int($repTemp) lt 0)
+		{
+			$scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_Tn" . abs($repTemp);
+		}
+		else
+		{
+			$scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_T" . int($repTemp);
+		}
+
+		#	   --- write the meteorology MOVES input csv formatted file
+		$fileout = $outdir . "/".  $scenarioID . "_zmh.csv";
+		open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+		printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
+		for($i=0;$i<=23;++$i) 
+		{ 
+			printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i+1, $repTemp, $MetRH;
+		}
+		close(OUTFL);
+
+		#         --- write the data importer for this runspec 
+		$fileout = $outdir . "/".  $scenarioID . "_imp.xml";
+		open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+		printf IMPFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -i \"%s\"%s%s", 
+								    substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
+		printf IMPFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"importlog_".$batchrun."_".$modelyear.".txt";
+		RV_writeDataImporter();
+		close(OUTFL);
+
+		#          --- write the runspec file
+		$fileout = $outdir . "/".  $scenarioID . "_mrs.xml";
+		open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+		printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
+								    substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
+		printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
+		RV_writeRunSpec();
+		close(OUTFL);
+		# end of RPV write
+
+	} # end of NXTMET
+
+} # end of RPD / RPV met input file read
+
+# --- write the rate per distance runs
+$RDtemps[$RDcnt][0][2] = $cntTemp;  # store the final count total for last RPD file
+for ($t=0;$t<=$RDcnt;++$t)
+{
+	# Retrieve meta data for RPD file to be written
+	$MetRep = $RDtemps[$t][0][0];
+	$MetMonth = $RDtemps[$t][0][1]; 
+	$cntTemp = $RDtemps[$t][0][2];
+	$outputDB = $MetRep . "_" . $modelyear . $pollsFlg;
+	
+	# Definte scenario ID, adjusting name for bins with negative temperature starts
+	if (int($RDtemps[$t][1][0]) lt 0)
 	{
-             if(int($RVtemps[$t]) lt 0)
-             {
-                  $scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_Tn" . abs($RVtemps[$t]);
-             }
-             else
-	     {
-                  $scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_T" . int($RVtemps[$t]);
-             }
-
-#	   --- write the meteorology MOVES input csv formatted file
-	   $fileout = $outdir . "/".  $scenarioID . "_zmh.csv";
-           open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	   printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
-	   for($i=0;$i<=23;++$i) 
-	   { 
-              printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i+1, $RVtemps[$t], $MetRH;
-	   }
-           close(OUTFL);
-
-#          --- write the data importer for this runspec 
-	   $fileout = $outdir . "/".  $scenarioID . "_imp.xml";
-           open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	   printf IMPFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -i \"%s\"%s%s", 
-                                                                    substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
-	   printf IMPFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"importlog_".$batchrun."_".$modelyear.".txt";
-	   RV_writeDataImporter();
-	   close(OUTFL);
-
-#          --- write the runspec file
-	   $fileout = $outdir . "/".  $scenarioID . "_mrs.xml";
-           open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	   printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
-                                                                    substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
-	   printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
-	   RV_writeRunSpec();
-	   close(OUTFL);
+		$scenarioID = "RD_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_Tn" . abs($RDtemps[$t][1][0]) . "_" . int($RDtemps[$t][$cntTemp][0]);
+	} else {
+		$scenarioID = "RD_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_T" . int($RDtemps[$t][1][0]) . "_" . int($RDtemps[$t][$cntTemp][0]);
 	}
-    }
-    else
-#   24-hour temperature profiles required for vapor venting emissions mode
-    {
-	$scenarioID = "RP_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_prof" . $MetProfId;
 
-#	--- write the meteorology MOVES input csv formatted file
-	$fileout = $outdir . "/".  $scenarioID . "_zmh.csv";
-        open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	   printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
-	for($i=0;$i<=23;++$i) 
-	{ 
-           printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i+1, $line[4+$i], $MetRH;
+	#	   --- write the meteorology MOVES input csv formatted file
+	$fileout = $outdir .  $scenarioID . "_zmh.csv";
+	open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+	printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
+
+	for($i=1;$i<=24;++$i) 
+	{
+		if ($i <= $cntTemp)
+		{ 
+			printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i, $RDtemps[$t][$i][0], $RDtemps[$t][$i][1];
+		} else { 
+			printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i, $RDtemps[$t][$cntTemp][0], $RDtemps[$t][$cntTemp][1];
+		}
+
 	}
-        close(OUTFL);
+	close(OUTFL);
 
-#       --- write the data importer for this runspec 
-	$fileout = $outdir . "/".  $scenarioID . "_imp.xml";
-        open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+	#          --- write the data importer for this runspec 
+	$fileout = $outdir . $scenarioID . "_imp.xml";
+	open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
 	printf IMPFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -i \"%s\"%s%s", 
-                                                                 substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
+							    substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
 	printf IMPFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"importlog_".$batchrun."_".$modelyear.".txt";
-	VV_writeDataImporter(); 
+	RD_writeDataImporter();
 	close(OUTFL);
 
-#       --- write the runspec file
-	$fileout = $outdir . "/".  $scenarioID."_mrs.xml";
-        open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+	# Need to reset outputDB
+
+	#          --- write the runspec file
+	$fileout = $outdir . "/".  $scenarioID . "_mrs.xml";
+	open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
 	printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
-                                                                 substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
+							    substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
 	printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
-	VV_writeRunSpec();
+	RD_writeRunSpec();
 	close(OUTFL);
 
-    }  # end if for profileid types
-    }  # end of NXTMET
+} # end of RPD write
 
-}  # end read met file
+# Read the RPP met data and write for RPP
+open(METFILE, "$RPMetFile") or die "Unable to open RPP met file: $RPMetFile\n";
+my ($VV_TempInc, $MetProfId, $oldornew, $temp1col);
+
+# (C. Allen, 26 Mar 2013) $oldornew is a flag, set to "old" for old format RPmetfiles, "new" for net format RPmetfiles.
+# It's set according to whether PP_TEMP_INCREMENT is preceded with a # or not. 
+# "PP_TEMP_INCREMENT" = old, "#PP_TEMP_INCREMENT" = new. 
+$oldornew = "unknown";
+
+# --- read the RPP met data records
+#
+while (<METFILE>)
+{
+	chomp;
+	$line = trim($_);
+	@line = split(/\s+/, trim($_));
+
+	# read header record for temperature bin increments
+	
+	NXTMET:
+	{
+		if (uc trim($line[0]) eq "PP_TEMP_INCREMENT") { $VV_TempInc = trim($line[1]); $oldornew = "old"; last NXTMET; }
+		if (uc trim($line[0]) eq "#PP_TEMP_INCREMENT") { $VV_TempInc = trim($line[1]); $oldornew = "new"; last NXTMET; }
+		if (($line eq "") || (substr($line, 0, 1) eq "#") || (substr($line, 0, 3) eq "Ref"))    { last NXTMET; }
+		if ((uc trim($line[0]) eq "PD_TEMP_INCREMENT") || (uc trim($line[0]) eq "PV_TEMP_INCREMENT"))  { last NXTMET; }
+		
+		# split data fields, determine record types, and parse
+		# diurnal record: fips, fuelMonth, key, rh, temp1, temp2, ... temp24
+
+		# new format delimited by commas, not spaces
+		# old format delimited by spaces only. header in new format can be delimited by spaces, so split both by spaces
+		# until it's known whether it's new or old format
+		if ($oldornew eq "new") {@line = split(',', $_);} 
+		if (($oldornew eq "old") || ($oldornew eq "unknown")) {@line = split(/\s+/, $_);}
+
+		$MetRep = substr(trim($line[0]),1,5);
+		$cntyidx = &getRepCnty();
+		if ($cntyidx <= 0) {die "ERROR : Repcounty input file incomplete.  Missing county:  $MetRep\nREPCOUNTY packets must exist for all FIPS in input met file.\n";}
+
+		$MetMonth = trim($line[1]);
+		$MetProfId = trim($line[2]);
+
+		# temp1col: In old format, temp1 is column 4 (with FIPS in column 0). In new format, temp1 is column 5.
+		if ($oldornew eq "old")
+		{
+			$MetRH = $line[3];
+			$temp1col = 4;
+		} # if oldornew = old
+
+		if ($oldornew eq "new")
+		{
+			$MetRH = 50; # RH not listed in new format files. Not needed for RPP anyway, so just set to 50.
+			$temp1col = 5;
+		} # if oldornew = new
+		
+		$outputDB = $MetRep . "_" . $modelyear . $pollsFlg;
+		$fipsList{$MetRep} = 1;
+
+		#   24-hour temperature profiles required for vapor venting emissions mode
+		if ($MetProfId ne "min_max")
+		{
+			$scenarioID = "RP_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_prof" . $MetProfId;
+
+			#	--- write the meteorology MOVES input csv formatted file
+			$fileout = $outdir . "/".  $scenarioID . "_zmh.csv";
+			open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+			printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
+			for($i=0;$i<=23;++$i) 
+			{ 
+				printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i+1, $line[$temp1col+$i], $MetRH;
+			}
+			close(OUTFL);
+
+			#       --- write the data importer for this runspec 
+			$fileout = $outdir . "/".  $scenarioID . "_imp.xml";
+			open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+			printf IMPFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -i \"%s\"%s%s", 
+											 substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
+			printf IMPFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"importlog_".$batchrun."_".$modelyear.".txt";
+			VV_writeDataImporter(); 
+			close(OUTFL);
+
+			#       --- write the runspec file
+			$fileout = $outdir . "/".  $scenarioID."_mrs.xml";
+			open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+			printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
+											 substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
+			printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
+			VV_writeRunSpec();
+			close(OUTFL);
+		}  # end if for profileid types
+
+	}  # end of NXTMET
+
+}  # end read met file for RPP
 
 $dbListFile = $outdir . "/" . $batchrun . "_" . $modelyear . "outputDBs.txt";
 open(DBFILE, ">$dbListFile") or die "Unable to open file for list of output DB names: $dbListFile\n";
@@ -815,47 +987,6 @@ sub getRepCnty
    }
 
 }  # end subroutine getRepCnty
-
-#=========================================================================================================
-#  Set the min/max temperature bins for each runspec file
-#=========================================================================================================
-sub setMinMax
-{
-   $numRDruns = 1;
-   $cntRDtemps = 0;
-   $RDminT = (int($MetMin/$RD_TempInc) ) * $RD_TempInc;
-   $RDminT = $RDminT - $RD_TempInc if ($MetMin <= 0.0);
-   $RDmaxT = (int($MetMax/$RD_TempInc) ) * $RD_TempInc + $RD_TempInc;
-   $RDmaxT = $RDmaxT - $RD_TempInc if ($MetMax <= 0.0);
-   $temperature = $RDminT;
-   while ($temperature <= $RDmaxT)
-	{
-	   ++$cntRDtemps;
-	   if ( $cntRDtemps > 24 ) {$cntRDtemps = 1; ++$numRDruns;}
-	   $RDtemps[$numRDruns][$cntRDtemps] = $temperature;
-	   $temperature = $temperature + $RD_TempInc;
-	}
-#  if the number of temps < 24 then pad with last temp through hour 24
-   if ($cntRDtemps < 24)
-   {
-	   for($i=$cntRDtemps+1;$i<=24;++$i){
-		$RDtemps[$numRDruns][$i] = $temperature - $RD_TempInc; }
-   }
-
-   $cntRVtemps = 0;
-   $RVminT = (int($MetMin/$RV_TempInc) ) * $RV_TempInc;
-   $RVminT = $RVminT - $RV_TempInc if ($MetMin <= 0.0);
-   $RVmaxT = (int($MetMax/$RV_TempInc) ) * $RV_TempInc + $RV_TempInc;
-   $RVmaxT = $RVmaxT - $RV_TempInc if ($MetMax <= 0.0);
-   $temperature = $RVminT;
-   while ($temperature <= $RVmaxT)
-	{
-	   ++$cntRVtemps;
-	   $RVtemps[$cntRVtemps] = $temperature;
-	   $temperature = $temperature + $RV_TempInc;
-	}
-
-} # end subroutine setMinMax
 
 #=========================================================================================================
 #  Generate the RunSpec files for categoryA; on-network operating mode
@@ -1095,7 +1226,7 @@ $qac = 0;
 	$process = substr($pp,-2);
 	$code = $PollProc_tablemap{$pp};
 	$codeOut = substr($code,$ref,1);
-#qa printf "pp %s process %s code %s codeout %s\n", $pp, $process,$code,$codeOut if ($qac < 10);
+#qa	printf "pp %s process %s code %s codeout %s\n", $pp, $process,$code,$codeOut if ($qac < 10);
 	if ($codeOut eq "1") 
 	{
 		$pollRef = substr($pp,0,length($pp)-2);
