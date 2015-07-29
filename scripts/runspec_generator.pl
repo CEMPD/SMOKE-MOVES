@@ -9,11 +9,17 @@
 #  fewest number of runs that will produce all the necessary
 #  emission factors.
 #
+#  Environ July   v0.1
 # 	RunSpec files generated for:
 #	a) on-road operating; rate per distance table
 #       b) off-network processes; rate per vehicle table
 #	c) vapor venting off-network; rate per profile table
 #
+#  UNC               17 Aug  v0.2 : Modelyear output to NO, roadtype and sourceusetype to NO, 
+#                                   onroadscc output to Yes.
+#  Huiyan (NESCAUM)  18 Oct  v0.3 : Removed roadtype=1 for RPD and
+#                                   roadtype 2-5 for RPV and RPP
+#  Huiyan (NESCAUM)  18 Oct  v0.31: Update not to use negative temperautre to create database name 
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -480,7 +486,7 @@ close CONTROLFILE;
 
 # Verify user run control file contains valid parameters ----------------
 
-$moveshome = "C:\\Program Files\\MOVES20091214" if ($moveshome eq '');
+$moveshome = "C:\\Program Files\\MOVES20100826" if ($moveshome eq '');
 printf "MOVES home directory is - %s\n",$moveshome;
 
 die "ERROR - invalid value for MODELYEAR ('$modelyear'). Valid values are 1990 and 1999 - 2050 inclusive."
@@ -651,8 +657,15 @@ while (<METFILE>)
         for($t=1;$t<=$numRDruns;++$t)
 	{
 
+             if(int($RDtemps[$t][1]) lt 0)
+             {
+                  $scenarioID = "RD_".$MetRep . "_" . $modelyear."_".$MetMonth ."_Tn". abs($RDtemps[$t][1])."_". int($RDtemps[$t][24]);
+             }
+             else
+	     {
+                  $scenarioID = "RD_".$MetRep . "_" . $modelyear."_".$MetMonth ."_T". int($RDtemps[$t][1])."_". int($RDtemps[$t][24]);
+             }
 
-	   $scenarioID = "RD_".$MetRep . "_" . $modelyear."_".$MetMonth ."_T". int($RDtemps[$t][1])."_". int($RDtemps[$t][24]);
 #	   --- write the meteorology MOVES input csv formatted file
 	   $fileout = $outdir .  $scenarioID . "_zmh.csv";
            open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
@@ -686,7 +699,14 @@ while (<METFILE>)
 #        --- rate per vehicle runs --- ========================================================================
         for($t=1;$t<=$cntRVtemps;++$t)
 	{
-	   $scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_T" . int($RVtemps[$t]);
+             if(int($RVtemps[$t]) lt 0)
+             {
+                  $scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_Tn" . abs($RVtemps[$t]);
+             }
+             else
+	     {
+                  $scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_T" . int($RVtemps[$t]);
+             }
 
 #	   --- write the meteorology MOVES input csv formatted file
 	   $fileout = $outdir . "/".  $scenarioID . "_zmh.csv";
@@ -852,7 +872,7 @@ sub RD_writeRunSpec
    &vehsel();
 
    printf OUTFL "\t<roadtypes>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\"/>\n";
    printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
    printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
    printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
@@ -907,10 +927,10 @@ sub RV_writeRunSpec
 
    printf OUTFL "\t<roadtypes>\n";
    printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"5\" roadtypename=\"Urban Unrestricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"5\" roadtypename=\"Urban Unrestricted Access\"/>\n";
    printf OUTFL "\t</roadtypes>\n";
 
    &pollProc (2);   # pass the column of interest for this runspec type
@@ -961,10 +981,10 @@ sub VV_writeRunSpec
 
    printf OUTFL "\t<roadtypes>\n";
    printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"5\" roadtypename=\"Urban Unrestricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
+   #printf OUTFL "\t\t<roadtype roadtypeid=\"5\" roadtypename=\"Urban Unrestricted Access\"/>\n";
    printf OUTFL "\t</roadtypes>\n";
 
    &pollProc (3);   # pass the column of interest for this runspec type
