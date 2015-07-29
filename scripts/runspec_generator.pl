@@ -26,6 +26,7 @@
 #  C. Allen (CSC)    26 Mar 2013 v0.33: Added support for new gridded format RPP metfiles
 #  B.H. Baek (UNC)   16 Apr 2014 : Updated to support MOVES2014
 #  C. Allen (CSC)    08 Oct 2014 v1.1: Additional updates to support MOVES2014
+#  C. Seppanen (UNC) 23 Mar 2015 v1.2: Revised import XML to use newer <fuel> element
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -63,7 +64,7 @@ my (@User_polls, @dayofweek);
 my ($pollsFlg, $WeekDayFlag, $WeekEndFlag);
 
 # repcounty variables
-my ($cntRepCnty, @repFips, @repAge, @repIM, @repFuelSup, @repFuelForm, @repPop, @repVMT);
+my ($cntRepCnty, @repFips, @repAge, @repIM, @repFuelSup, @repFuelForm, @repFuelUsage, @repFuelAVFT, @repPop, @repVMT);
 
 my ($default_dummy);
 $default_dummy = "filename_dummy_holder.csv";
@@ -1124,6 +1125,8 @@ while (<REPFILE>)
     if (uc trim($line[0]) eq "IM")                        { $repIM[$cntRepCnty] = trim($line[1]); last NXTREP; }
     if (uc trim($line[0]) eq "FUELSUPPLY")                { $repFuelSup[$cntRepCnty] = trim($line[1]); last NXTREP; }
     if (uc trim($line[0]) eq "FUELFORM")                  { $repFuelForm[$cntRepCnty] = trim($line[1]); last NXTREP; }
+    if (uc trim($line[0]) eq "FUELUSAGE")                 { $repFuelUsage[$cntRepCnty] = trim($line[1]); last NXTREP; }
+    if (uc trim($line[0]) eq "FUELAVFT")                  { $repFuelAVFT[$cntRepCnty] = trim($line[1]); last NXTREP; }
     if (uc trim($line[0]) eq "POP")                       { $repPop[$cntRepCnty] = trim($line[1]); last NXTREP; }
     if (uc trim($line[0]) eq "HPMSVMT")                   { $repVMT[$cntRepCnty] = trim($line[1]); last NXTREP; }
     }
@@ -1768,24 +1771,24 @@ sub dataImporter
    printf OUTFL "\t\t\t</avgSpeedDistribution>\n";
    printf OUTFL "\t\t</parts>\n";
    printf OUTFL "\t</avgspeeddistribution>\n";
-
-   printf OUTFL "\t<fuelsupply>\n";
+   
+   printf OUTFL "\t<fuel>\n";
    printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
    printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<fuelSupply>\n";
+   printf OUTFL "\t\t\t<FuelSupply>\n";
    printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelSup[$cntyidx];
-   printf OUTFL "\t\t\t</fuelSupply>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</fuelsupply>\n";
-
-   printf OUTFL "\t<fuelformulation>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<fuelFormulation>\n";
+   printf OUTFL "\t\t\t</FuelSupply>\n";
+   printf OUTFL "\t\t\t<FuelFormulation>\n";
    printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelForm[$cntyidx];
-   printf OUTFL "\t\t\t</fuelFormulation>\n";
+   printf OUTFL "\t\t\t</FuelFormulation>\n";
+   printf OUTFL "\t\t\t<FuelUsageFraction>\n";
+   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelUsage[$cntyidx];
+   printf OUTFL "\t\t\t</FuelUsageFraction>\n";
+   printf OUTFL "\t\t\t<AVFT>\n";
+   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelAVFT[$cntyidx];
+   printf OUTFL "\t\t\t</AVFT>\n";
    printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</fuelformulation>\n";
+   printf OUTFL "\t</fuel>\n";
 
    printf OUTFL "\t<zonemonthhour>\n";
    printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
