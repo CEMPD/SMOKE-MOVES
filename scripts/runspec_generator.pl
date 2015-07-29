@@ -1221,14 +1221,14 @@ sub rspend
    printf OUTFL "\t<geographicoutputdetail description=\"LINK\"/>\n";
 
    printf OUTFL "\t<outputemissionsbreakdownselection>\n";
-   printf OUTFL "\t\t<modelyear selected=\"true\"/>\n";
+   printf OUTFL "\t\t<modelyear selected=\"false\"/>\n";
    printf OUTFL "\t\t<fueltype selected=\"true\"/>\n";
    printf OUTFL "\t\t<emissionprocess selected=\"true\"/>\n";
    printf OUTFL "\t\t<onroadoffroad selected=\"true\"/>\n";
-   printf OUTFL "\t\t<roadtype selected=\"true\"/>\n";
-   printf OUTFL "\t\t<sourceusetype selected=\"true\"/>\n";
+   printf OUTFL "\t\t<roadtype selected=\"false\"/>\n";
+   printf OUTFL "\t\t<sourceusetype selected=\"false\"/>\n";
    printf OUTFL "\t\t<movesvehicletype selected=\"false\"/>\n";
-   printf OUTFL "\t\t<onroadscc selected=\"false\"/>\n";
+   printf OUTFL "\t\t<onroadscc selected=\"true\"/>\n";
    printf OUTFL "\t\t<offroadscc selected=\"false\"/>\n";
    printf OUTFL "\t\t<estimateuncertainty selected=\"false\" numberOfIterations=\"2\" keepSampledData=\"false\" keepIterations=\"false\"/>\n";
    printf OUTFL "\t\t<segment selected=\"false\"/>\n";
