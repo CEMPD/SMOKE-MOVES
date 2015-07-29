@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Filename   : runspec_generator_v0.1.pl
+# Filename   : runspec_generator_v1.0.pl
 # Author     : Michele Jimenez, ENVIRON International Corp.
 # Version    : 0.1
 # Description: Generate RunSpec control files input to MOVES2010
@@ -9,7 +9,7 @@
 #  fewest number of runs that will produce all the necessary
 #  emission factors.
 #
-#  Environ July   v0.1
+#  Environ July   v1.0
 # 	RunSpec files generated for:
 #	a) on-road operating; rate per distance table
 #       b) off-network processes; rate per vehicle table
@@ -24,6 +24,8 @@
 #  Beidler (CSC)     18 Jan  v0.32: Change MET input data format to match new MET4MOVES output
 #                                   Changed run control format to accomadate both new input file and old
 #  C. Allen (CSC)    26 Mar 2013 v0.33: Added support for new gridded format RPP metfiles
+#  B.H. Baek (UNC)   16 Apr 2014 : Updated to support MOVES2014
+#  C. Allen (CSC)    08 Oct 2014 v1.1: Additional updates to support MOVES2014
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -73,6 +75,9 @@ $default_dummy = "filename_dummy_holder.csv";
 # MOVES2010 speed bins --------------------------------------------------------------
 
 # MOVES2010 pollutant list ----------------------------------------------------------
+# MOVES2014 has many more pollutants. This list has NOT been updated for MOVES2014, but the pollsListID,
+#   pollsListName, and PollProc_tablemap have been updated.
+#
 #  poll_ID   poll_name Dependence  Pollutant
 #     1      THC                   Total Gaseous Hydrocarbons
 #     79     NMHC      THC, CH4    Non-Methane Hydrocarbons
@@ -121,82 +126,153 @@ $default_dummy = "filename_dummy_holder.csv";
 #     61     HGIIGAS               Mercury Divalen Gaseous
 #     62     PHGI                  Mercury Particulate
   
-my ( @pollOptions, @pollsList, @pollsListID, @pollsListName);
+my ( @pollOptions, @pollsListID, @pollsListName); # @pollsList
 my ( @pollsByOptionOZONE, @pollsByOptionTOXICS, @pollsByOptionPM, @pollsByOptionGHG );
 my ( @pollsOutList );
 
-@pollsList = ( "THC", "NMHC", "NMOG", "TOG", "VOC", "CO", "NOX", "NH3", "NO", "NO2", "HONO",
-               "SO2", "TOTPM10", "OCARB10", "ECARB10", "SO4_10", "BRAKE10", "TIRE10", "TOTPM2_5", "OCARB2_5", "ECARB2_5",
-               "SO4_2_5", "BRAKE2_5", "TIRE2_5", "TENERGY", "CH4", "N20", "CO2", "BENZ", "ETHA", "MTBE",
-               "NAPH", "BUTA", "FORM", "ACET", "ACRO", 
-               "TRMEPN224", "ETHYLBENZ", "HEXANE", "PROPIONAL", "STYRENE", "TOLUENE", "XYL", "HG", "HGIIGAS", "PHGI" );
+# C. Allen: pollsList is not actually used
+#@pollsList = ( "MOVES1", "MOVES2", "MOVES3", "MOVES5", "MOVES6", "MOVES20", "MOVES21", "MOVES22", "MOVES23", "MOVES24", "MOVES25", "MOVES26", "MOVES27", "MOVES30", "MOVES31", "MOVES32", "MOVES33", "MOVES34", "MOVES35", "MOVES36", "MOVES40", "MOVES41", "MOVES42", "MOVES43", "MOVES44", "MOVES45", "MOVES46",
+#                "MOVES51", "MOVES52", "MOVES53", "MOVES54", "MOVES55", "MOVES56", "MOVES57", "MOVES58", "MOVES59", "MOVES60", "MOVES61", "MOVES62", "MOVES63", "MOVES65", "MOVES66", "MOVES67", "MOVES68", "MOVES69", "MOVES70", "MOVES71", "MOVES72", "MOVES73", "MOVES74", "MOVES75", "MOVES76", "MOVES77",
+#		"MOVES78", "MOVES79", "MOVES80", "MOVES81", "MOVES82", "MOVES83", "MOVES84", "MOVES86", "MOVES87", "MOVES90", "MOVES91", "MOVES100", "MOVES106", "MOVES107", "MOVES110", "MOVES111", "MOVES112", "MOVES115", "MOVES116", "MOVES117", "MOVES118", "MOVES119", "MOVES121",
+#		"MOVES122", "MOVES130", "MOVES131", "MOVES132", "MOVES133", "MOVES134", "MOVES135", "MOVES136", "MOVES137", "MOVES138", "MOVES139", "MOVES140", "MOVES141", "MOVES142", "MOVES143", "MOVES144", "MOVES145", "MOVES146", "MOVES168", "MOVES169", "MOVES170",
+#		"MOVES171", "MOVES172", "MOVES173", "MOVES174", "MOVES175", "MOVES176", "MOVES177", "MOVES178", "MOVES181", "MOVES182", "MOVES183", "MOVES184", "MOVES185", "MOVES1000");
 
-
-@pollsListID = ( 1, 79, 80, 86, 87, 2, 3, 30, 32, 33, 34, 31, 100, 101, 102, 105, 106, 107, 110, 111,
-               112, 115, 116, 117, 91, 5, 6, 90, 20, 21, 22, 23, 24, 25, 26, 27, 40, 41, 42, 43, 44, 45, 46, 60, 61, 62 );
-               
+@pollsListID = ( 1, 2, 3, 5, 6, 20, 21, 22, 23, 24, 25, 26, 27, 30, 31, 32, 33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 
+                51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 
+		78, 79, 80, 81, 82, 83, 84, 86, 87, 90, 91, 100, 106, 107, 110, 111, 112, 115, 116, 117, 118, 119, 121, 
+		122, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 168, 169, 170, 
+		171, 172, 173, 174, 175, 176, 177, 178, 181, 182, 183, 184, 185, 1000 );
 
 @pollsListName = ("Total Gaseous Hydrocarbons",
-                 "Non-Methane Hydrocarbons",
-                 "Non-Methane Organic Gases",
-                 "Total Organic Gases",
-                 "Volatile Organic Compounds",
                  "Carbon Monoxide (CO)",
-                 "Oxides of Nitrogen",
-                 "Ammonia (NH3)",
-                 "Nitrogen Oxide",
-                 "Nitrogen Dioxide",
-                 "Nitrous acid",
-                 "Sulfur Dioxide (SO2)",
-                 "Primary Exhaust PM10  - Total",
-                 "Primary PM10 - Organic Carbon",
-                 "Primary PM10 - Elemental Carbon",
-                 "Primary PM10 - Sulfate Particulate",
-                 "Primary PM10 - Brakewear Particulate",
-                 "Primary PM10 - Tirewear Particulate",
-                 "Primary Exhaust PM2.5 - Total",
-                 "Primary PM2.5 - Organic Carbon",
-                 "Primary PM2.5 - Elemental Carbon",
-                 "Primary PM2.5 - Sulfate Particulate",
-                 "Primary PM2.5 - Brakewear Particulate",
-                 "Primary PM2.5 - Tirewear Particulate",
-                 "Total Energy Consumption",
+                 "Oxides of Nitrogen (NOx)",
                  "Methane (CH4)",
                  "Nitrous Oxide (N2O)",
-                 "Atmospheric CO2",
                  "Benzene",
                  "Ethanol",
                  "MTBE",
-                 "Naphthalene",
+                 "Naphthalene particle",
                  "1,3-Butadiene",
                  "Formaldehyde",
                  "Acetaldehyde",
                  "Acrolein",
-                 "2,2,4-Trimethylpentane", 
+                 "Ammonia (NH3)",
+                 "Sulfur Dioxide (SO2)",
+                 "Nitrogen Oxide (NO)",
+                 "Nitrogen Dioxide (NO2)",
+                 "Nitrous Acid (HONO)",
+                 "Nitrate (NO3)",
+                 "Ammonium (NH4)",
+                 "2,2,4-Trimethylpentane",
                  "Ethyl Benzene",
                  "Hexane",
                  "Propionaldehyde",
                  "Styrene",
                  "Toluene",
                  "Xylene",
+                 "Chloride",
+                 "Sodium",
+                 "Potassium",
+                 "Magnesium",
+                 "Calcium",
+                 "Titanium",
+                 "Silicon",
+                 "Aluminum",
+                 "Iron",
                  "Mercury Elemental Gaseous",
                  "Mercury Divalent Gaseous",
-                 "Mercury Particulate");
+                 "Mercury Particulate",
+                 "Arsenic Compounds",
+                 "Chromium 6+",
+                 "Manganese Compounds",
+                 "Nickel Compounds",
+                 "Dibenzo(a,h)anthracene particle",
+                 "Fluoranthene particle",
+                 "Acenaphthene particle",
+                 "Acenaphthylene particle",
+                 "Anthracene particle",
+                 "Benz(a)anthracene particle",
+                 "Benzo(a)pyrene particle",
+                 "Benzo(b)fluoranthene particle",
+                 "Benzo(g,h,i)perylene particle",
+                 "Benzo(k)fluoranthene particle",
+                 "Chrysene particle",
+                 "Non-Methane Hydrocarbons",
+                 "Non-Methane Organic Gases",
+                 "Fluorene particle",
+                 "Indeno(1,2,3,c,d)pyrene particle",
+                 "Phenanthrene particle",
+                 "Pyrene particle",
+                 "Total Organic Gases",
+                 "Volatile Organic Compounds",
+                 "Atmospheric CO2",
+                 "Total Energy Consumption",
+                 "Primary Exhaust PM10  - Total",
+                 "Primary PM10 - Brakewear Particulate",
+                 "Primary PM10 - Tirewear Particulate",
+                 "Primary Exhaust PM2.5 - Total",
+                 "Organic Carbon",
+                 "Elemental Carbon",
+                 "Sulfate Particulate",
+                 "Primary PM2.5 - Brakewear Particulate",
+                 "Primary PM2.5 - Tirewear Particulate",
+                 "Composite - NonECPM",
+                 "H2O (aerosol)",
+                 "CMAQ5.0 Unspeciated (PMOTHR)",
+                 "Non-carbon Organic Matter (NCOM)",
+                 "1,2,3,7,8,9-Hexachlorodibenzo-p-Dioxin",
+                 "Octachlorodibenzo-p-dioxin",
+                 "1,2,3,4,6,7,8-Heptachlorodibenzo-p-Dioxin",
+                 "Octachlorodibenzofuran",
+                 "1,2,3,4,7,8-Hexachlorodibenzo-p-Dioxin",
+                 "1,2,3,7,8-Pentachlorodibenzo-p-Dioxin",
+                 "2,3,7,8-Tetrachlorodibenzofuran",
+                 "1,2,3,4,7,8,9-Heptachlorodibenzofuran",
+                 "2,3,4,7,8-Pentachlorodibenzofuran",
+                 "1,2,3,7,8-Pentachlorodibenzofuran",
+                 "1,2,3,6,7,8-Hexachlorodibenzofuran",
+                 "1,2,3,6,7,8-Hexachlorodibenzo-p-Dioxin",
+                 "2,3,7,8-Tetrachlorodibenzo-p-Dioxin",
+                 "2,3,4,6,7,8-Hexachlorodibenzofuran",
+                 "1,2,3,4,6,7,8-Heptachlorodibenzofuran",
+                 "1,2,3,4,7,8-Hexachlorodibenzofuran",
+                 "1,2,3,7,8,9-Hexachlorodibenzofuran",
+                 "Dibenzo(a,h)anthracene gas",
+                 "Fluoranthene gas",
+                 "Acenaphthene gas",
+                 "Acenaphthylene gas",
+                 "Anthracene gas",
+                 "Benz(a)anthracene gas",
+                 "Benzo(a)pyrene gas",
+                 "Benzo(b)fluoranthene gas",
+                 "Benzo(g,h,i)perylene gas",
+                 "Benzo(k)fluoranthene gas",
+                 "Chrysene gas",
+                 "Fluorene gas",
+                 "Indeno(1,2,3,c,d)pyrene gas",
+                 "Phenanthrene gas",
+                 "Pyrene gas",
+                 "Naphthalene gas",
+                 "CB05 Mechanism");
 
 
 @pollOptions = ("OZONE", "PM", "TOXICS", "GHG");
 
 #  A subset of MOVES2010 pollutants are generated for each user option specified.
 #  Taken from the design document of Task4, Table 4.
-@pollsByOptionOZONE = (1,5,79,80,86,87,2,3,32,33,34);
-@pollsByOptionTOXICS = (1,5,79,80,86,87,20,22,23,24,25,26,27,100,101,102,105,91,40,41,42,43,44,45,46,60,61,62);
-@pollsByOptionPM = (1,5,79,80,86,87,3,30,32,33,34,31,100,101,102,105,106,107,110,111,112,115,116,117,91,20);
+#  For MOVES2014 edits, C. Allen placed most of the newer pollutants under "TOXICS", except PM species.
+#  I don't know how often these pollutant subset options are used in practice.
+@pollsByOptionOZONE = (1,5,79,80,86,87,2,3,32,33,34,1000);
+@pollsByOptionTOXICS = (1,5,79,80,86,87,20,21,22,23,24,25,26,27,100,91,40,41,42,43,44,45,46,60,61,62,54,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,81,82,83,84,
+                        130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,168,169,170,171,172,173,174,175,176,177,178,181,182,183,184,185,1000);
+@pollsByOptionPM = (1,5,79,80,86,87,3,30,32,33,34,31,100,106,107,110,111,112,115,116,117,118,119,121,122,91,20,35,36,51,52,53,54,55,56,57,58,59);
 @pollsByOptionGHG = (90,91,5,6);
 
 # Process Types ------------------------------------------------------------------
 my (@processID, %processName, %PollProc_tablemap);
 
-@processID = (1,2,9,10,11,12,13,15,16,17,18,19,90);
+# Added process 91 for MOVES2014
+@processID = (1,2,9,10,11,12,13,15,16,17,18,19,90,91);
 $processName{"01"} = "Running Exhaust";
 $processName{"02"} = "Start Exhaust";
 $processName{"09"} = "Brakewear";
@@ -210,12 +286,13 @@ $processName{"17"} = "Crankcase Extended Idle Exhaust";
 $processName{"18"} = "Refueling Displacement Vapor Loss";
 $processName{"19"} = "Refueling Spillage Loss";
 $processName{"90"} = "Extended Idle Exhaust";
+$processName{"91"} = "Auxiliary Power Exhaust";
 
 # Process Types ------------------------------------------------------------------
 # Table to map pollutant-process IDs to the output runspec files by EF table type
 # Pollutant.Process reference - process is the last two characters of the code
 # Binary: 100 = rate/distance   10 = rate/vehicle        1 = rate/profile
-#
+# Rebuilt from scratch for MOVES2014 based on sample runspecs provided by Harvey Michaels, OTAQ
 
 $PollProc_tablemap{"101"} = "100";
 $PollProc_tablemap{"102"} = "010";
@@ -225,32 +302,31 @@ $PollProc_tablemap{"113"} = "110";
 $PollProc_tablemap{"115"} = "100";
 $PollProc_tablemap{"116"} = "010";
 $PollProc_tablemap{"117"} = "010";
-$PollProc_tablemap{"118"} = "100";
-$PollProc_tablemap{"119"} = "100";
+$PollProc_tablemap{"118"} = "110";
+$PollProc_tablemap{"119"} = "110";
 $PollProc_tablemap{"190"} = "010";
+$PollProc_tablemap{"191"} = "010";
 $PollProc_tablemap{"201"} = "100";
 $PollProc_tablemap{"202"} = "010";
 $PollProc_tablemap{"215"} = "100";
 $PollProc_tablemap{"216"} = "010";
 $PollProc_tablemap{"217"} = "010";
 $PollProc_tablemap{"290"} = "010";
+$PollProc_tablemap{"291"} = "010";
 $PollProc_tablemap{"301"} = "100";
 $PollProc_tablemap{"302"} = "010";
 $PollProc_tablemap{"315"} = "100";
 $PollProc_tablemap{"316"} = "010";
 $PollProc_tablemap{"317"} = "010";
 $PollProc_tablemap{"390"} = "010";
+$PollProc_tablemap{"391"} = "010";
 $PollProc_tablemap{"501"} = "100";
 $PollProc_tablemap{"502"} = "010";
-$PollProc_tablemap{"511"} = "110";
-$PollProc_tablemap{"512"} = "101";
-$PollProc_tablemap{"513"} = "110";
 $PollProc_tablemap{"515"} = "100";
 $PollProc_tablemap{"516"} = "010";
 $PollProc_tablemap{"517"} = "010";
-$PollProc_tablemap{"518"} = "100";
-$PollProc_tablemap{"519"} = "100";
 $PollProc_tablemap{"590"} = "010";
+$PollProc_tablemap{"591"} = "010";
 $PollProc_tablemap{"601"} = "100";
 $PollProc_tablemap{"602"} = "010";
 $PollProc_tablemap{"615"} = "100";
@@ -263,9 +339,10 @@ $PollProc_tablemap{"2013"} = "110";
 $PollProc_tablemap{"2015"} = "100";
 $PollProc_tablemap{"2016"} = "010";
 $PollProc_tablemap{"2017"} = "010";
-$PollProc_tablemap{"2018"} = "100";
-$PollProc_tablemap{"2019"} = "100";
+$PollProc_tablemap{"2018"} = "110";
+$PollProc_tablemap{"2019"} = "110";
 $PollProc_tablemap{"2090"} = "010";
+$PollProc_tablemap{"2091"} = "010";
 $PollProc_tablemap{"2101"} = "100";
 $PollProc_tablemap{"2102"} = "010";
 $PollProc_tablemap{"2111"} = "110";
@@ -273,10 +350,8 @@ $PollProc_tablemap{"2112"} = "101";
 $PollProc_tablemap{"2113"} = "110";
 $PollProc_tablemap{"2115"} = "100";
 $PollProc_tablemap{"2116"} = "010";
-$PollProc_tablemap{"2117"} = "010";
-$PollProc_tablemap{"2118"} = "100";
-$PollProc_tablemap{"2119"} = "100";
-$PollProc_tablemap{"2190"} = "010";
+$PollProc_tablemap{"2118"} = "110";
+$PollProc_tablemap{"2119"} = "110";
 $PollProc_tablemap{"2201"} = "100";
 $PollProc_tablemap{"2202"} = "010";
 $PollProc_tablemap{"2211"} = "110";
@@ -284,75 +359,92 @@ $PollProc_tablemap{"2212"} = "101";
 $PollProc_tablemap{"2213"} = "110";
 $PollProc_tablemap{"2215"} = "100";
 $PollProc_tablemap{"2216"} = "010";
-$PollProc_tablemap{"2217"} = "010";
-$PollProc_tablemap{"2218"} = "100";
-$PollProc_tablemap{"2219"} = "100";
-$PollProc_tablemap{"2290"} = "010";
+$PollProc_tablemap{"2218"} = "110";
+$PollProc_tablemap{"2219"} = "110";
 $PollProc_tablemap{"2301"} = "100";
 $PollProc_tablemap{"2302"} = "010";
-$PollProc_tablemap{"2311"} = "110";
-$PollProc_tablemap{"2312"} = "101";
-$PollProc_tablemap{"2313"} = "110";
 $PollProc_tablemap{"2315"} = "100";
 $PollProc_tablemap{"2316"} = "010";
 $PollProc_tablemap{"2317"} = "010";
-$PollProc_tablemap{"2318"} = "100";
-$PollProc_tablemap{"2319"} = "100";
 $PollProc_tablemap{"2390"} = "010";
+$PollProc_tablemap{"2391"} = "010";
 $PollProc_tablemap{"2401"} = "100";
 $PollProc_tablemap{"2402"} = "010";
 $PollProc_tablemap{"2415"} = "100";
 $PollProc_tablemap{"2416"} = "010";
 $PollProc_tablemap{"2417"} = "010";
 $PollProc_tablemap{"2490"} = "010";
+$PollProc_tablemap{"2491"} = "010";
 $PollProc_tablemap{"2501"} = "100";
 $PollProc_tablemap{"2502"} = "010";
 $PollProc_tablemap{"2515"} = "100";
 $PollProc_tablemap{"2516"} = "010";
 $PollProc_tablemap{"2517"} = "010";
 $PollProc_tablemap{"2590"} = "010";
+$PollProc_tablemap{"2591"} = "010";
 $PollProc_tablemap{"2601"} = "100";
 $PollProc_tablemap{"2602"} = "010";
 $PollProc_tablemap{"2615"} = "100";
 $PollProc_tablemap{"2616"} = "010";
 $PollProc_tablemap{"2617"} = "010";
 $PollProc_tablemap{"2690"} = "010";
+$PollProc_tablemap{"2691"} = "010";
 $PollProc_tablemap{"2701"} = "100";
 $PollProc_tablemap{"2702"} = "010";
 $PollProc_tablemap{"2715"} = "100";
 $PollProc_tablemap{"2716"} = "010";
 $PollProc_tablemap{"2717"} = "010";
 $PollProc_tablemap{"2790"} = "010";
+$PollProc_tablemap{"2791"} = "010";
 $PollProc_tablemap{"3001"} = "100";
 $PollProc_tablemap{"3002"} = "010";
 $PollProc_tablemap{"3015"} = "100";
 $PollProc_tablemap{"3016"} = "010";
 $PollProc_tablemap{"3017"} = "010";
 $PollProc_tablemap{"3090"} = "010";
+$PollProc_tablemap{"3091"} = "010";
 $PollProc_tablemap{"3101"} = "100";
 $PollProc_tablemap{"3102"} = "010";
 $PollProc_tablemap{"3115"} = "100";
 $PollProc_tablemap{"3116"} = "010";
 $PollProc_tablemap{"3117"} = "010";
 $PollProc_tablemap{"3190"} = "010";
+$PollProc_tablemap{"3191"} = "010";
 $PollProc_tablemap{"3201"} = "100";
 $PollProc_tablemap{"3202"} = "010";
 $PollProc_tablemap{"3215"} = "100";
 $PollProc_tablemap{"3216"} = "010";
 $PollProc_tablemap{"3217"} = "010";
 $PollProc_tablemap{"3290"} = "010";
+$PollProc_tablemap{"3291"} = "010";
 $PollProc_tablemap{"3301"} = "100";
 $PollProc_tablemap{"3302"} = "010";
 $PollProc_tablemap{"3315"} = "100";
 $PollProc_tablemap{"3316"} = "010";
 $PollProc_tablemap{"3317"} = "010";
 $PollProc_tablemap{"3390"} = "010";
+$PollProc_tablemap{"3391"} = "010";
 $PollProc_tablemap{"3401"} = "100";
 $PollProc_tablemap{"3402"} = "010";
 $PollProc_tablemap{"3415"} = "100";
 $PollProc_tablemap{"3416"} = "010";
 $PollProc_tablemap{"3417"} = "010";
 $PollProc_tablemap{"3490"} = "010";
+$PollProc_tablemap{"3491"} = "010";
+$PollProc_tablemap{"3501"} = "100";
+$PollProc_tablemap{"3502"} = "010";
+$PollProc_tablemap{"3515"} = "100";
+$PollProc_tablemap{"3516"} = "010";
+$PollProc_tablemap{"3517"} = "010";
+$PollProc_tablemap{"3590"} = "010";
+$PollProc_tablemap{"3591"} = "010";
+$PollProc_tablemap{"3601"} = "100";
+$PollProc_tablemap{"3602"} = "010";
+$PollProc_tablemap{"3615"} = "100";
+$PollProc_tablemap{"3616"} = "010";
+$PollProc_tablemap{"3617"} = "010";
+$PollProc_tablemap{"3690"} = "010";
+$PollProc_tablemap{"3691"} = "010";
 $PollProc_tablemap{"4001"} = "100";
 $PollProc_tablemap{"4002"} = "010";
 $PollProc_tablemap{"4011"} = "110";
@@ -361,7 +453,10 @@ $PollProc_tablemap{"4013"} = "110";
 $PollProc_tablemap{"4015"} = "100";
 $PollProc_tablemap{"4016"} = "010";
 $PollProc_tablemap{"4017"} = "010";
+$PollProc_tablemap{"4018"} = "110";
+$PollProc_tablemap{"4019"} = "110";
 $PollProc_tablemap{"4090"} = "010";
+$PollProc_tablemap{"4091"} = "010";
 $PollProc_tablemap{"4101"} = "100";
 $PollProc_tablemap{"4102"} = "010";
 $PollProc_tablemap{"4111"} = "110";
@@ -370,7 +465,10 @@ $PollProc_tablemap{"4113"} = "110";
 $PollProc_tablemap{"4115"} = "100";
 $PollProc_tablemap{"4116"} = "010";
 $PollProc_tablemap{"4117"} = "010";
+$PollProc_tablemap{"4118"} = "110";
+$PollProc_tablemap{"4119"} = "110";
 $PollProc_tablemap{"4190"} = "010";
+$PollProc_tablemap{"4191"} = "010";
 $PollProc_tablemap{"4201"} = "100";
 $PollProc_tablemap{"4202"} = "010";
 $PollProc_tablemap{"4211"} = "110";
@@ -379,19 +477,24 @@ $PollProc_tablemap{"4213"} = "110";
 $PollProc_tablemap{"4215"} = "100";
 $PollProc_tablemap{"4216"} = "010";
 $PollProc_tablemap{"4217"} = "010";
+$PollProc_tablemap{"4218"} = "110";
+$PollProc_tablemap{"4219"} = "110";
 $PollProc_tablemap{"4290"} = "010";
+$PollProc_tablemap{"4291"} = "010";
 $PollProc_tablemap{"4301"} = "100";
 $PollProc_tablemap{"4302"} = "010";
 $PollProc_tablemap{"4315"} = "100";
 $PollProc_tablemap{"4316"} = "010";
 $PollProc_tablemap{"4317"} = "010";
 $PollProc_tablemap{"4390"} = "010";
+$PollProc_tablemap{"4391"} = "010";
 $PollProc_tablemap{"4401"} = "100";
 $PollProc_tablemap{"4402"} = "010";
 $PollProc_tablemap{"4415"} = "100";
 $PollProc_tablemap{"4416"} = "010";
 $PollProc_tablemap{"4417"} = "010";
 $PollProc_tablemap{"4490"} = "010";
+$PollProc_tablemap{"4491"} = "010";
 $PollProc_tablemap{"4501"} = "100";
 $PollProc_tablemap{"4502"} = "010";
 $PollProc_tablemap{"4511"} = "110";
@@ -400,7 +503,10 @@ $PollProc_tablemap{"4513"} = "110";
 $PollProc_tablemap{"4515"} = "100";
 $PollProc_tablemap{"4516"} = "010";
 $PollProc_tablemap{"4517"} = "010";
+$PollProc_tablemap{"4518"} = "110";
+$PollProc_tablemap{"4519"} = "110";
 $PollProc_tablemap{"4590"} = "010";
+$PollProc_tablemap{"4591"} = "010";
 $PollProc_tablemap{"4601"} = "100";
 $PollProc_tablemap{"4602"} = "010";
 $PollProc_tablemap{"4611"} = "110";
@@ -409,10 +515,157 @@ $PollProc_tablemap{"4613"} = "110";
 $PollProc_tablemap{"4615"} = "100";
 $PollProc_tablemap{"4616"} = "010";
 $PollProc_tablemap{"4617"} = "010";
+$PollProc_tablemap{"4618"} = "110";
+$PollProc_tablemap{"4619"} = "110";
 $PollProc_tablemap{"4690"} = "010";
+$PollProc_tablemap{"4691"} = "010";
+$PollProc_tablemap{"5101"} = "100";
+$PollProc_tablemap{"5102"} = "010";
+$PollProc_tablemap{"5115"} = "100";
+$PollProc_tablemap{"5116"} = "010";
+$PollProc_tablemap{"5117"} = "010";
+$PollProc_tablemap{"5190"} = "010";
+$PollProc_tablemap{"5191"} = "010";
+$PollProc_tablemap{"5201"} = "100";
+$PollProc_tablemap{"5202"} = "010";
+$PollProc_tablemap{"5215"} = "100";
+$PollProc_tablemap{"5216"} = "010";
+$PollProc_tablemap{"5217"} = "010";
+$PollProc_tablemap{"5290"} = "010";
+$PollProc_tablemap{"5291"} = "010";
+$PollProc_tablemap{"5301"} = "100";
+$PollProc_tablemap{"5302"} = "010";
+$PollProc_tablemap{"5315"} = "100";
+$PollProc_tablemap{"5316"} = "010";
+$PollProc_tablemap{"5317"} = "010";
+$PollProc_tablemap{"5390"} = "010";
+$PollProc_tablemap{"5391"} = "010";
+$PollProc_tablemap{"5401"} = "100";
+$PollProc_tablemap{"5402"} = "010";
+$PollProc_tablemap{"5415"} = "100";
+$PollProc_tablemap{"5416"} = "010";
+$PollProc_tablemap{"5417"} = "010";
+$PollProc_tablemap{"5490"} = "010";
+$PollProc_tablemap{"5491"} = "010";
+$PollProc_tablemap{"5501"} = "100";
+$PollProc_tablemap{"5502"} = "010";
+$PollProc_tablemap{"5515"} = "100";
+$PollProc_tablemap{"5516"} = "010";
+$PollProc_tablemap{"5517"} = "010";
+$PollProc_tablemap{"5590"} = "010";
+$PollProc_tablemap{"5591"} = "010";
+$PollProc_tablemap{"5601"} = "100";
+$PollProc_tablemap{"5602"} = "010";
+$PollProc_tablemap{"5615"} = "100";
+$PollProc_tablemap{"5616"} = "010";
+$PollProc_tablemap{"5617"} = "010";
+$PollProc_tablemap{"5690"} = "010";
+$PollProc_tablemap{"5691"} = "010";
+$PollProc_tablemap{"5701"} = "100";
+$PollProc_tablemap{"5702"} = "010";
+$PollProc_tablemap{"5715"} = "100";
+$PollProc_tablemap{"5716"} = "010";
+$PollProc_tablemap{"5717"} = "010";
+$PollProc_tablemap{"5790"} = "010";
+$PollProc_tablemap{"5791"} = "010";
+$PollProc_tablemap{"5801"} = "100";
+$PollProc_tablemap{"5802"} = "010";
+$PollProc_tablemap{"5815"} = "100";
+$PollProc_tablemap{"5816"} = "010";
+$PollProc_tablemap{"5817"} = "010";
+$PollProc_tablemap{"5890"} = "010";
+$PollProc_tablemap{"5891"} = "010";
+$PollProc_tablemap{"5901"} = "100";
+$PollProc_tablemap{"5902"} = "010";
+$PollProc_tablemap{"5915"} = "100";
+$PollProc_tablemap{"5916"} = "010";
+$PollProc_tablemap{"5917"} = "010";
+$PollProc_tablemap{"5990"} = "010";
+$PollProc_tablemap{"5991"} = "010";
 $PollProc_tablemap{"6001"} = "100";
 $PollProc_tablemap{"6101"} = "100";
 $PollProc_tablemap{"6201"} = "100";
+$PollProc_tablemap{"6301"} = "100";
+$PollProc_tablemap{"6501"} = "100";
+$PollProc_tablemap{"6601"} = "100";
+$PollProc_tablemap{"6701"} = "100";
+$PollProc_tablemap{"6801"} = "100";
+$PollProc_tablemap{"6802"} = "010";
+$PollProc_tablemap{"6815"} = "100";
+$PollProc_tablemap{"6816"} = "010";
+$PollProc_tablemap{"6817"} = "010";
+$PollProc_tablemap{"6890"} = "010";
+$PollProc_tablemap{"6891"} = "010";
+$PollProc_tablemap{"6901"} = "100";
+$PollProc_tablemap{"6902"} = "010";
+$PollProc_tablemap{"6915"} = "100";
+$PollProc_tablemap{"6916"} = "010";
+$PollProc_tablemap{"6917"} = "010";
+$PollProc_tablemap{"6990"} = "010";
+$PollProc_tablemap{"6991"} = "010";
+$PollProc_tablemap{"7001"} = "100";
+$PollProc_tablemap{"7002"} = "010";
+$PollProc_tablemap{"7015"} = "100";
+$PollProc_tablemap{"7016"} = "010";
+$PollProc_tablemap{"7017"} = "010";
+$PollProc_tablemap{"7090"} = "010";
+$PollProc_tablemap{"7091"} = "010";
+$PollProc_tablemap{"7101"} = "100";
+$PollProc_tablemap{"7102"} = "010";
+$PollProc_tablemap{"7115"} = "100";
+$PollProc_tablemap{"7116"} = "010";
+$PollProc_tablemap{"7117"} = "010";
+$PollProc_tablemap{"7190"} = "010";
+$PollProc_tablemap{"7191"} = "010";
+$PollProc_tablemap{"7201"} = "100";
+$PollProc_tablemap{"7202"} = "010";
+$PollProc_tablemap{"7215"} = "100";
+$PollProc_tablemap{"7216"} = "010";
+$PollProc_tablemap{"7217"} = "010";
+$PollProc_tablemap{"7290"} = "010";
+$PollProc_tablemap{"7291"} = "010";
+$PollProc_tablemap{"7301"} = "100";
+$PollProc_tablemap{"7302"} = "010";
+$PollProc_tablemap{"7315"} = "100";
+$PollProc_tablemap{"7316"} = "010";
+$PollProc_tablemap{"7317"} = "010";
+$PollProc_tablemap{"7390"} = "010";
+$PollProc_tablemap{"7391"} = "010";
+$PollProc_tablemap{"7401"} = "100";
+$PollProc_tablemap{"7402"} = "010";
+$PollProc_tablemap{"7415"} = "100";
+$PollProc_tablemap{"7416"} = "010";
+$PollProc_tablemap{"7417"} = "010";
+$PollProc_tablemap{"7490"} = "010";
+$PollProc_tablemap{"7491"} = "010";
+$PollProc_tablemap{"7501"} = "100";
+$PollProc_tablemap{"7502"} = "010";
+$PollProc_tablemap{"7515"} = "100";
+$PollProc_tablemap{"7516"} = "010";
+$PollProc_tablemap{"7517"} = "010";
+$PollProc_tablemap{"7590"} = "010";
+$PollProc_tablemap{"7591"} = "010";
+$PollProc_tablemap{"7601"} = "100";
+$PollProc_tablemap{"7602"} = "010";
+$PollProc_tablemap{"7615"} = "100";
+$PollProc_tablemap{"7616"} = "010";
+$PollProc_tablemap{"7617"} = "010";
+$PollProc_tablemap{"7690"} = "010";
+$PollProc_tablemap{"7691"} = "010";
+$PollProc_tablemap{"7701"} = "100";
+$PollProc_tablemap{"7702"} = "010";
+$PollProc_tablemap{"7715"} = "100";
+$PollProc_tablemap{"7716"} = "010";
+$PollProc_tablemap{"7717"} = "010";
+$PollProc_tablemap{"7790"} = "010";
+$PollProc_tablemap{"7791"} = "010";
+$PollProc_tablemap{"7801"} = "100";
+$PollProc_tablemap{"7802"} = "010";
+$PollProc_tablemap{"7815"} = "100";
+$PollProc_tablemap{"7816"} = "010";
+$PollProc_tablemap{"7817"} = "010";
+$PollProc_tablemap{"7890"} = "010";
+$PollProc_tablemap{"7891"} = "010";
 $PollProc_tablemap{"7901"} = "100";
 $PollProc_tablemap{"7902"} = "010";
 $PollProc_tablemap{"7911"} = "110";
@@ -421,9 +674,10 @@ $PollProc_tablemap{"7913"} = "110";
 $PollProc_tablemap{"7915"} = "100";
 $PollProc_tablemap{"7916"} = "010";
 $PollProc_tablemap{"7917"} = "010";
-$PollProc_tablemap{"7918"} = "100";
-$PollProc_tablemap{"7919"} = "100";
+$PollProc_tablemap{"7918"} = "110";
+$PollProc_tablemap{"7919"} = "110";
 $PollProc_tablemap{"7990"} = "010";
+$PollProc_tablemap{"7991"} = "010";
 $PollProc_tablemap{"8001"} = "100";
 $PollProc_tablemap{"8002"} = "010";
 $PollProc_tablemap{"8011"} = "110";
@@ -432,9 +686,38 @@ $PollProc_tablemap{"8013"} = "110";
 $PollProc_tablemap{"8015"} = "100";
 $PollProc_tablemap{"8016"} = "010";
 $PollProc_tablemap{"8017"} = "010";
-$PollProc_tablemap{"8018"} = "100";
-$PollProc_tablemap{"8019"} = "100";
+$PollProc_tablemap{"8018"} = "110";
+$PollProc_tablemap{"8019"} = "110";
 $PollProc_tablemap{"8090"} = "010";
+$PollProc_tablemap{"8091"} = "010";
+$PollProc_tablemap{"8101"} = "100";
+$PollProc_tablemap{"8102"} = "010";
+$PollProc_tablemap{"8115"} = "100";
+$PollProc_tablemap{"8116"} = "010";
+$PollProc_tablemap{"8117"} = "010";
+$PollProc_tablemap{"8190"} = "010";
+$PollProc_tablemap{"8191"} = "010";
+$PollProc_tablemap{"8201"} = "100";
+$PollProc_tablemap{"8202"} = "010";
+$PollProc_tablemap{"8215"} = "100";
+$PollProc_tablemap{"8216"} = "010";
+$PollProc_tablemap{"8217"} = "010";
+$PollProc_tablemap{"8290"} = "010";
+$PollProc_tablemap{"8291"} = "010";
+$PollProc_tablemap{"8301"} = "100";
+$PollProc_tablemap{"8302"} = "010";
+$PollProc_tablemap{"8315"} = "100";
+$PollProc_tablemap{"8316"} = "010";
+$PollProc_tablemap{"8317"} = "010";
+$PollProc_tablemap{"8390"} = "010";
+$PollProc_tablemap{"8391"} = "010";
+$PollProc_tablemap{"8401"} = "100";
+$PollProc_tablemap{"8402"} = "010";
+$PollProc_tablemap{"8415"} = "100";
+$PollProc_tablemap{"8416"} = "010";
+$PollProc_tablemap{"8417"} = "010";
+$PollProc_tablemap{"8490"} = "010";
+$PollProc_tablemap{"8491"} = "010";
 $PollProc_tablemap{"8601"} = "100";
 $PollProc_tablemap{"8602"} = "010";
 $PollProc_tablemap{"8611"} = "110";
@@ -443,9 +726,10 @@ $PollProc_tablemap{"8613"} = "110";
 $PollProc_tablemap{"8615"} = "100";
 $PollProc_tablemap{"8616"} = "010";
 $PollProc_tablemap{"8617"} = "010";
-$PollProc_tablemap{"8618"} = "100";
-$PollProc_tablemap{"8619"} = "100";
+$PollProc_tablemap{"8618"} = "110";
+$PollProc_tablemap{"8619"} = "110";
 $PollProc_tablemap{"8690"} = "010";
+$PollProc_tablemap{"8691"} = "010";
 $PollProc_tablemap{"8701"} = "100";
 $PollProc_tablemap{"8702"} = "010";
 $PollProc_tablemap{"8711"} = "110";
@@ -454,39 +738,25 @@ $PollProc_tablemap{"8713"} = "110";
 $PollProc_tablemap{"8715"} = "100";
 $PollProc_tablemap{"8716"} = "010";
 $PollProc_tablemap{"8717"} = "010";
-$PollProc_tablemap{"8718"} = "100";
-$PollProc_tablemap{"8719"} = "100";
+$PollProc_tablemap{"8718"} = "110";
+$PollProc_tablemap{"8719"} = "110";
 $PollProc_tablemap{"8790"} = "010";
+$PollProc_tablemap{"8791"} = "010";
 $PollProc_tablemap{"9001"} = "100";
 $PollProc_tablemap{"9002"} = "010";
 $PollProc_tablemap{"9090"} = "010";
+$PollProc_tablemap{"9091"} = "010";
 $PollProc_tablemap{"9101"} = "100";
 $PollProc_tablemap{"9102"} = "010";
 $PollProc_tablemap{"9190"} = "010";
+$PollProc_tablemap{"9191"} = "010";
 $PollProc_tablemap{"10001"} = "100";
 $PollProc_tablemap{"10002"} = "010";
 $PollProc_tablemap{"10015"} = "100";
 $PollProc_tablemap{"10016"} = "010";
 $PollProc_tablemap{"10017"} = "010";
 $PollProc_tablemap{"10090"} = "010";
-$PollProc_tablemap{"10101"} = "100";
-$PollProc_tablemap{"10102"} = "010";
-$PollProc_tablemap{"10115"} = "100";
-$PollProc_tablemap{"10116"} = "010";
-$PollProc_tablemap{"10117"} = "010";
-$PollProc_tablemap{"10190"} = "010";
-$PollProc_tablemap{"10201"} = "100";
-$PollProc_tablemap{"10202"} = "010";
-$PollProc_tablemap{"10215"} = "100";
-$PollProc_tablemap{"10216"} = "010";
-$PollProc_tablemap{"10217"} = "010";
-$PollProc_tablemap{"10290"} = "010";
-$PollProc_tablemap{"10501"} = "100";
-$PollProc_tablemap{"10502"} = "010";
-$PollProc_tablemap{"10515"} = "100";
-$PollProc_tablemap{"10516"} = "010";
-$PollProc_tablemap{"10517"} = "010";
-$PollProc_tablemap{"10590"} = "010";
+$PollProc_tablemap{"10091"} = "010";
 $PollProc_tablemap{"10609"} = "100";
 $PollProc_tablemap{"10710"} = "100";
 $PollProc_tablemap{"11001"} = "100";
@@ -495,26 +765,204 @@ $PollProc_tablemap{"11015"} = "100";
 $PollProc_tablemap{"11016"} = "010";
 $PollProc_tablemap{"11017"} = "010";
 $PollProc_tablemap{"11090"} = "010";
+$PollProc_tablemap{"11091"} = "010";
 $PollProc_tablemap{"11101"} = "100";
 $PollProc_tablemap{"11102"} = "010";
 $PollProc_tablemap{"11115"} = "100";
 $PollProc_tablemap{"11116"} = "010";
 $PollProc_tablemap{"11117"} = "010";
 $PollProc_tablemap{"11190"} = "010";
+$PollProc_tablemap{"11191"} = "010";
 $PollProc_tablemap{"11201"} = "100";
 $PollProc_tablemap{"11202"} = "010";
 $PollProc_tablemap{"11215"} = "100";
 $PollProc_tablemap{"11216"} = "010";
 $PollProc_tablemap{"11217"} = "010";
 $PollProc_tablemap{"11290"} = "010";
+$PollProc_tablemap{"11291"} = "010";
 $PollProc_tablemap{"11501"} = "100";
 $PollProc_tablemap{"11502"} = "010";
 $PollProc_tablemap{"11515"} = "100";
 $PollProc_tablemap{"11516"} = "010";
 $PollProc_tablemap{"11517"} = "010";
 $PollProc_tablemap{"11590"} = "010";
+$PollProc_tablemap{"11591"} = "010";
 $PollProc_tablemap{"11609"} = "100";
 $PollProc_tablemap{"11710"} = "100";
+$PollProc_tablemap{"11801"} = "100";
+$PollProc_tablemap{"11802"} = "010";
+$PollProc_tablemap{"11815"} = "100";
+$PollProc_tablemap{"11816"} = "010";
+$PollProc_tablemap{"11817"} = "010";
+$PollProc_tablemap{"11890"} = "010";
+$PollProc_tablemap{"11891"} = "010";
+$PollProc_tablemap{"11901"} = "100";
+$PollProc_tablemap{"11902"} = "010";
+$PollProc_tablemap{"11915"} = "100";
+$PollProc_tablemap{"11916"} = "010";
+$PollProc_tablemap{"11917"} = "010";
+$PollProc_tablemap{"11990"} = "010";
+$PollProc_tablemap{"11991"} = "010";
+$PollProc_tablemap{"12101"} = "100";
+$PollProc_tablemap{"12102"} = "010";
+$PollProc_tablemap{"12115"} = "100";
+$PollProc_tablemap{"12116"} = "010";
+$PollProc_tablemap{"12117"} = "010";
+$PollProc_tablemap{"12190"} = "010";
+$PollProc_tablemap{"12191"} = "010";
+$PollProc_tablemap{"12201"} = "100";
+$PollProc_tablemap{"12202"} = "010";
+$PollProc_tablemap{"12215"} = "100";
+$PollProc_tablemap{"12216"} = "010";
+$PollProc_tablemap{"12217"} = "010";
+$PollProc_tablemap{"12290"} = "010";
+$PollProc_tablemap{"12291"} = "010";
+$PollProc_tablemap{"13001"} = "100";
+$PollProc_tablemap{"13101"} = "100";
+$PollProc_tablemap{"13201"} = "100";
+$PollProc_tablemap{"13301"} = "100";
+$PollProc_tablemap{"13401"} = "100";
+$PollProc_tablemap{"13501"} = "100";
+$PollProc_tablemap{"13601"} = "100";
+$PollProc_tablemap{"13701"} = "100";
+$PollProc_tablemap{"13801"} = "100";
+$PollProc_tablemap{"13901"} = "100";
+$PollProc_tablemap{"14001"} = "100";
+$PollProc_tablemap{"14101"} = "100";
+$PollProc_tablemap{"14201"} = "100";
+$PollProc_tablemap{"14301"} = "100";
+$PollProc_tablemap{"14401"} = "100";
+$PollProc_tablemap{"14501"} = "100";
+$PollProc_tablemap{"14601"} = "100";
+$PollProc_tablemap{"16801"} = "100";
+$PollProc_tablemap{"16802"} = "010";
+$PollProc_tablemap{"16815"} = "100";
+$PollProc_tablemap{"16816"} = "010";
+$PollProc_tablemap{"16817"} = "010";
+$PollProc_tablemap{"16890"} = "010";
+$PollProc_tablemap{"16891"} = "010";
+$PollProc_tablemap{"16901"} = "100";
+$PollProc_tablemap{"16902"} = "010";
+$PollProc_tablemap{"16915"} = "100";
+$PollProc_tablemap{"16916"} = "010";
+$PollProc_tablemap{"16917"} = "010";
+$PollProc_tablemap{"16990"} = "010";
+$PollProc_tablemap{"16991"} = "010";
+$PollProc_tablemap{"17001"} = "100";
+$PollProc_tablemap{"17002"} = "010";
+$PollProc_tablemap{"17015"} = "100";
+$PollProc_tablemap{"17016"} = "010";
+$PollProc_tablemap{"17017"} = "010";
+$PollProc_tablemap{"17090"} = "010";
+$PollProc_tablemap{"17091"} = "010";
+$PollProc_tablemap{"17101"} = "100";
+$PollProc_tablemap{"17102"} = "010";
+$PollProc_tablemap{"17115"} = "100";
+$PollProc_tablemap{"17116"} = "010";
+$PollProc_tablemap{"17117"} = "010";
+$PollProc_tablemap{"17190"} = "010";
+$PollProc_tablemap{"17191"} = "010";
+$PollProc_tablemap{"17201"} = "100";
+$PollProc_tablemap{"17202"} = "010";
+$PollProc_tablemap{"17215"} = "100";
+$PollProc_tablemap{"17216"} = "010";
+$PollProc_tablemap{"17217"} = "010";
+$PollProc_tablemap{"17290"} = "010";
+$PollProc_tablemap{"17291"} = "010";
+$PollProc_tablemap{"17301"} = "100";
+$PollProc_tablemap{"17302"} = "010";
+$PollProc_tablemap{"17315"} = "100";
+$PollProc_tablemap{"17316"} = "010";
+$PollProc_tablemap{"17317"} = "010";
+$PollProc_tablemap{"17390"} = "010";
+$PollProc_tablemap{"17391"} = "010";
+$PollProc_tablemap{"17401"} = "100";
+$PollProc_tablemap{"17402"} = "010";
+$PollProc_tablemap{"17415"} = "100";
+$PollProc_tablemap{"17416"} = "010";
+$PollProc_tablemap{"17417"} = "010";
+$PollProc_tablemap{"17490"} = "010";
+$PollProc_tablemap{"17491"} = "010";
+$PollProc_tablemap{"17501"} = "100";
+$PollProc_tablemap{"17502"} = "010";
+$PollProc_tablemap{"17515"} = "100";
+$PollProc_tablemap{"17516"} = "010";
+$PollProc_tablemap{"17517"} = "010";
+$PollProc_tablemap{"17590"} = "010";
+$PollProc_tablemap{"17591"} = "010";
+$PollProc_tablemap{"17601"} = "100";
+$PollProc_tablemap{"17602"} = "010";
+$PollProc_tablemap{"17615"} = "100";
+$PollProc_tablemap{"17616"} = "010";
+$PollProc_tablemap{"17617"} = "010";
+$PollProc_tablemap{"17690"} = "010";
+$PollProc_tablemap{"17691"} = "010";
+$PollProc_tablemap{"17701"} = "100";
+$PollProc_tablemap{"17702"} = "010";
+$PollProc_tablemap{"17715"} = "100";
+$PollProc_tablemap{"17716"} = "010";
+$PollProc_tablemap{"17717"} = "010";
+$PollProc_tablemap{"17790"} = "010";
+$PollProc_tablemap{"17791"} = "010";
+$PollProc_tablemap{"17801"} = "100";
+$PollProc_tablemap{"17802"} = "010";
+$PollProc_tablemap{"17815"} = "100";
+$PollProc_tablemap{"17816"} = "010";
+$PollProc_tablemap{"17817"} = "010";
+$PollProc_tablemap{"17890"} = "010";
+$PollProc_tablemap{"17891"} = "010";
+$PollProc_tablemap{"18101"} = "100";
+$PollProc_tablemap{"18102"} = "010";
+$PollProc_tablemap{"18115"} = "100";
+$PollProc_tablemap{"18116"} = "010";
+$PollProc_tablemap{"18117"} = "010";
+$PollProc_tablemap{"18190"} = "010";
+$PollProc_tablemap{"18191"} = "010";
+$PollProc_tablemap{"18201"} = "100";
+$PollProc_tablemap{"18202"} = "010";
+$PollProc_tablemap{"18215"} = "100";
+$PollProc_tablemap{"18216"} = "010";
+$PollProc_tablemap{"18217"} = "010";
+$PollProc_tablemap{"18290"} = "010";
+$PollProc_tablemap{"18291"} = "010";
+$PollProc_tablemap{"18301"} = "100";
+$PollProc_tablemap{"18302"} = "010";
+$PollProc_tablemap{"18315"} = "100";
+$PollProc_tablemap{"18316"} = "010";
+$PollProc_tablemap{"18317"} = "010";
+$PollProc_tablemap{"18390"} = "010";
+$PollProc_tablemap{"18391"} = "010";
+$PollProc_tablemap{"18401"} = "100";
+$PollProc_tablemap{"18402"} = "010";
+$PollProc_tablemap{"18415"} = "100";
+$PollProc_tablemap{"18416"} = "010";
+$PollProc_tablemap{"18417"} = "010";
+$PollProc_tablemap{"18490"} = "010";
+$PollProc_tablemap{"18491"} = "010";
+$PollProc_tablemap{"18501"} = "100";
+$PollProc_tablemap{"18502"} = "010";
+$PollProc_tablemap{"18511"} = "110";
+$PollProc_tablemap{"18512"} = "101";
+$PollProc_tablemap{"18513"} = "110";
+$PollProc_tablemap{"18515"} = "100";
+$PollProc_tablemap{"18516"} = "010";
+$PollProc_tablemap{"18517"} = "010";
+$PollProc_tablemap{"18518"} = "110";
+$PollProc_tablemap{"18519"} = "110";
+$PollProc_tablemap{"18590"} = "010";
+$PollProc_tablemap{"18591"} = "010";
+$PollProc_tablemap{"100001"} = "100";
+$PollProc_tablemap{"100002"} = "010";
+$PollProc_tablemap{"100011"} = "110";
+$PollProc_tablemap{"100012"} = "101";
+$PollProc_tablemap{"100013"} = "110";
+$PollProc_tablemap{"100015"} = "100";
+$PollProc_tablemap{"100016"} = "010";
+$PollProc_tablemap{"100017"} = "010";
+$PollProc_tablemap{"100018"} = "110";
+$PollProc_tablemap{"100019"} = "110";
+$PollProc_tablemap{"100090"} = "010";
+$PollProc_tablemap{"100091"} = "010";
 
 #=========================================================================================================
 # Read  RUN CONTROL file
@@ -993,25 +1441,37 @@ sub getRepCnty
 #=========================================================================================================
 sub RD_writeRunSpec
 {
-   printf OUTFL "\t<runspec>\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2010 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES2014-20140722\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2014 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<models>\n";
+   printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
+   printf OUTFL "\t</models>\n";
    printf OUTFL "\t<modelscale value=\"Rates\"/>\n";
    printf OUTFL "\t<modeldomain value=\"SINGLE\"/>\n";
 
    &geoselect();
    &timespan(1);
    &vehsel();
+   
+   printf OUTFL "\t<offroadvehicleselections>\n";
+   printf OUTFL "\t</offroadvehicleselections>\n";
+   printf OUTFL "\t<offroadvehiclesccs>\n";
+   printf OUTFL "\t</offroadvehiclesccs>\n";
 
-   printf OUTFL "\t<roadtypes>\n";
+   printf OUTFL "\t<roadtypes separateramps=\"false\">\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"5\" roadtypename=\"Urban Unrestricted Access\"/>\n";
+   printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\" modelCombination=\"M1\"/>\n";
+   printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\" modelCombination=\"M1\"/>\n";
+   printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\" modelCombination=\"M1\"/>\n";
+   printf OUTFL "\t\t<roadtype roadtypeid=\"5\" roadtypename=\"Urban Unrestricted Access\" modelCombination=\"M1\"/>\n";
    printf OUTFL "\t</roadtypes>\n";
 
    &pollProc (1);   # pass the column of interest for this runspec type
 
+   printf OUTFL "\t<databaseselections>\n";
+   printf OUTFL "\t\t<databaseselection servername=\"\" databasename=\"regionalfuels_2010_20120802_m14\" description=\"\"/>\n";
+   printf OUTFL "\t</databaseselections>\n";
+   
    &rspend();
 }  # end subroutine RD_writeRunSpec
 
@@ -1047,8 +1507,11 @@ sub RD_writeDataImporter
 #=========================================================================================================
 sub RV_writeRunSpec
 {
-   printf OUTFL "\t<runspec>\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2010 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES2014-20140722\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2014 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<models>\n";
+   printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
+   printf OUTFL "\t</models>\n";
    printf OUTFL "\t<modelscale value=\"Rates\"/>\n";
    printf OUTFL "\t<modeldomain value=\"SINGLE\"/>\n";
 
@@ -1056,8 +1519,13 @@ sub RV_writeRunSpec
    &timespan(0);
    &vehsel();
 
-   printf OUTFL "\t<roadtypes>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\"/>\n";
+   printf OUTFL "\t<offroadvehicleselections>\n";
+   printf OUTFL "\t</offroadvehicleselections>\n";
+   printf OUTFL "\t<offroadvehiclesccs>\n";
+   printf OUTFL "\t</offroadvehiclesccs>\n";
+
+   printf OUTFL "\t<roadtypes separateramps=\"false\">\n";
+   printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\" modelCombination=\"M1\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
@@ -1066,6 +1534,11 @@ sub RV_writeRunSpec
 
    &pollProc (2);   # pass the column of interest for this runspec type
 
+   printf OUTFL "\t<databaseselections>\n";
+   printf OUTFL "\t\t<databaseselection servername=\"\" databasename=\"%s_zmh\" description=\"\"/>\n",$scenarioID;
+   printf OUTFL "\t\t<databaseselection servername=\"\" databasename=\"regionalfuels_2010_20120802_m14\" description=\"\"/>\n";
+   printf OUTFL "\t</databaseselections>\n";
+   
    &rspend();
 }  # end subroutine RV_writeRunSpec
 
@@ -1101,8 +1574,11 @@ sub RV_writeDataImporter
 #=========================================================================================================
 sub VV_writeRunSpec
 {
-   printf OUTFL "\t<runspec>\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2010 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES2014-20140722\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2014 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<models>\n";
+   printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
+   printf OUTFL "\t</models>\n";
    printf OUTFL "\t<modelscale value=\"Rates\"/>\n";
    printf OUTFL "\t<modeldomain value=\"SINGLE\"/>\n";
 
@@ -1110,8 +1586,13 @@ sub VV_writeRunSpec
    &timespan(0);
    &vehsel();
 
-   printf OUTFL "\t<roadtypes>\n";
-   printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\"/>\n";
+   printf OUTFL "\t<offroadvehicleselections>\n";
+   printf OUTFL "\t</offroadvehicleselections>\n";
+   printf OUTFL "\t<offroadvehiclesccs>\n";
+   printf OUTFL "\t</offroadvehiclesccs>\n";
+
+   printf OUTFL "\t<roadtypes separateramps=\"false\">\n";
+   printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\" modelCombination=\"M1\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"4\" roadtypename=\"Urban Restricted Access\"/>\n";
@@ -1120,6 +1601,11 @@ sub VV_writeRunSpec
 
    &pollProc (3);   # pass the column of interest for this runspec type
 
+   printf OUTFL "\t<databaseselections>\n";
+   printf OUTFL "\t\t<databaseselection servername=\"\" databasename=\"%s_zmh\" description=\"\"/>\n",$scenarioID;
+   printf OUTFL "\t\t<databaseselection servername=\"\" databasename=\"regionalfuels_2010_20120802_m14\" description=\"\"/>\n";
+   printf OUTFL "\t</databaseselections>\n";
+   
    &rspend();
 }  # end subroutine VV_writeRunSpec
 
@@ -1154,7 +1640,7 @@ sub VV_writeDataImporter
 sub geoselect
 {
    printf OUTFL "\t<geographicselections>\n";
-   printf OUTFL "\t\t<geographicselection type=\"COUNTY\" key=\"%d\" description=\"\"/>", $MetRep;
+   printf OUTFL "\t\t<geographicselection type=\"COUNTY\" key=\"%d\" description=\"\"/>\n", $MetRep;
    printf OUTFL "\t</geographicselections>\n";
         
 }  # end geoselect subroutine
@@ -1182,7 +1668,7 @@ sub timespan
 # --- onroad vehicle selections - ====================================================================
 sub vehsel
 {
-   #--Note - gas intercity bus, gas combination long-haul truck, diesel motorcycles not supported in MOVES2010 DB
+   #--Note - gas/E-85 intercity bus, gas/E-85 combination long-haul truck, diesel motorcycles not supported in MOVES2014 DB
    printf OUTFL "\t<onroadvehicleselections>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"11\" sourcetypename=\"Motorcycle\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/>\n";
@@ -1207,6 +1693,18 @@ sub vehsel
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"54\" sourcetypename=\"Motor Home\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"61\" sourcetypename=\"Combination Short-haul Truck\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"62\" sourcetypename=\"Combination Long-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"42\" sourcetypename=\"Transit Bus\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"11\" sourcetypename=\"Motorcycle\"/> \n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/> \n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"31\" sourcetypename=\"Passenger Truck\" />\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"32\" sourcetypename=\"Light Commercial Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"42\" sourcetypename=\"Transit Bus\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"43\" sourcetypename=\"School Bus\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"51\" sourcetypename=\"Refuse Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"52\" sourcetypename=\"Single Unit Short-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"53\" sourcetypename=\"Single Unit Long-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"54\" sourcetypename=\"Motor Home\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"61\" sourcetypename=\"Combination Short-haul Truck\"/>\n";
    printf OUTFL "\t</onroadvehicleselections>\n";
 }  # end vehsel subroutine
 
@@ -1361,8 +1859,6 @@ sub dataImporter
 # --- finish up the runspec  file - ====================================================================
 sub rspend
 {
-   printf OUTFL "\t<databaseselections>\n";
-   printf OUTFL "\t</databaseselections>\n";
    printf OUTFL "\t<internalcontrolstrategies>\n";
 
    printf OUTFL "\t<internalcontrolstrategy classname=\"gov.epa.otaq.moves.master.implementation.ghg.internalcontrolstrategies.rateofprogress.RateOfProgressStrategy\"><![CDATA[ useParameters	No ]]></internalcontrolstrategy>\n";
@@ -1376,26 +1872,27 @@ sub rspend
    printf OUTFL "\t\t<fueltype selected=\"true\"/>\n";
    printf OUTFL "\t\t<emissionprocess selected=\"true\"/>\n";
    printf OUTFL "\t\t<onroadoffroad selected=\"true\"/>\n";
-   printf OUTFL "\t\t<roadtype selected=\"false\"/>\n";
-   printf OUTFL "\t\t<sourceusetype selected=\"false\"/>\n";
+   printf OUTFL "\t\t<roadtype selected=\"true\"/>\n";
+   printf OUTFL "\t\t<sourceusetype selected=\"true\"/>\n";
    printf OUTFL "\t\t<movesvehicletype selected=\"false\"/>\n";
    printf OUTFL "\t\t<onroadscc selected=\"true\"/>\n";
-   printf OUTFL "\t\t<offroadscc selected=\"false\"/>\n";
    printf OUTFL "\t\t<estimateuncertainty selected=\"false\" numberOfIterations=\"2\" keepSampledData=\"false\" keepIterations=\"false\"/>\n";
-   printf OUTFL "\t\t<segment selected=\"false\"/>\n";
+   printf OUTFL "\t\t<sector selected=\"false\"/>\n";
+   printf OUTFL "\t\t<engtechid selected=\"false\"/>\n";
    printf OUTFL "\t\t<hpclass selected=\"false\"/>\n";
+   printf OUTFL "\t\t<regclassid selected=\"false\"/>\n";
    printf OUTFL "\t</outputemissionsbreakdownselection>\n";
 
    printf OUTFL "\t<outputdatabase servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$outputDB;
 
    printf OUTFL "\t<outputtimestep value=\"Hour\"/>\n";
-   printf OUTFL "\t<outputvmtdata value=\"true\"/>\n";
-   printf OUTFL "\t<outputsho value=\"true\"/>\n";
-   printf OUTFL "\t<outputsh value=\"true\"/>\n";
-   printf OUTFL "\t<outputshp value=\"true\"/>\n";
-   printf OUTFL "\t<outputshidling value=\"true\"/>\n";
-   printf OUTFL "\t<outputstarts value=\"true\"/>\n";
-   printf OUTFL "\t<outputpopulation value=\"true\"/>\n";
+   printf OUTFL "\t<outputvmtdata value=\"false\"/>\n";
+   printf OUTFL "\t<outputsho value=\"false\"/>\n";
+   printf OUTFL "\t<outputsh value=\"false\"/>\n";
+   printf OUTFL "\t<outputshp value=\"false\"/>\n";
+   printf OUTFL "\t<outputshidling value=\"false\"/>\n";
+   printf OUTFL "\t<outputstarts value=\"false\"/>\n";
+   printf OUTFL "\t<outputpopulation value=\"false\"/>\n";
    printf OUTFL "\t<scaleinputdatabase servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$scenarioID."_in";
    printf OUTFL "\t<pmsize value=\"0\"/>\n";
    printf OUTFL "\t<outputfactors>\n";
@@ -1403,14 +1900,14 @@ sub rspend
    printf OUTFL "\t\t<distancefactors selected=\"true\" units=\"Miles\"/>\n";
    printf OUTFL "\t\t<massfactors selected=\"true\" units=\"Grams\" energyunits=\"Joules\"/>\n";
    printf OUTFL "\t</outputfactors>\n";
-   printf OUTFL"\t<savedata>\n";
-   printf OUTFL"\t</savedata>\n";
+   printf OUTFL "\t<savedata>\n";
+   printf OUTFL "\t</savedata>\n";
    printf OUTFL "\t<donotexecute>\n";
    printf OUTFL "\t</donotexecute>\n";
 
    printf OUTFL "\t<generatordatabase shouldsave=\"false\" servername=\"\" databasename=\"\" description=\"\"/>\n";
    printf OUTFL	"\t\t<donotperformfinalaggregation selected=\"false\"/>\n";
-   printf OUTFL "\t<lookuptableflags scenarioid=\"%s\" truncateoutput=\"true\" truncateactivity=\"true\"/>\n",$scenarioID;
+   printf OUTFL "\t<lookuptableflags scenarioid=\"%s\" truncateoutput=\"true\" truncateactivity=\"true\" truncatebaserates=\"true\"/>\n",$scenarioID;
 
    printf OUTFL "</runspec>\n";
 
