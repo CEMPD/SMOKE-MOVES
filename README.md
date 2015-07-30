@@ -18,11 +18,11 @@ Generate import scripts and runspec files:
 
 Import custom county data:
 
-`> runspec_files/06001/06001_2011importer.csh`
+`> csh runspec_files/06001/06001_2011importer.csh`
 
 Run MOVES2014:
 
-`> runspec_files/06001/06001_2011runspec.csh`
+`> csh runspec_files/06001/06001_2011runspec.csh`
 
 After MOVES finishes running, generate emission factor files:
 
