@@ -1,6 +1,17 @@
 # SMOKE-MOVES
 SMOKE-MOVES2014 Processing Scripts
 
+This package assumes a base directory of `/opt/SMOKE-MOVES/`. Update the following input files with your installation location:
+
+```
+inputs/countyrep.in
+inputs/06001/control.in
+```
+
+Also, set the location of your MOVES2014 installation in `inputs/06001/control.in`:
+
+`MOVESHOME      = /opt/MOVES2014`
+
 Generate import scripts and runspec files:
 
 `> scripts/runspec_generator.pl inputs/06001/control.in inputs/countyrep.in -csh`
@@ -13,7 +24,7 @@ Run MOVES2014:
 
 `> runspec_files/06001/06001_2011runspec.csh`
 
-After MOVES finishes running:
+After MOVES finishes running, generate emission factor files:
 
 ```
 > mkdir efs
