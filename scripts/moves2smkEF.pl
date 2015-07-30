@@ -1,15 +1,16 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.2.pl
+# Filename   : moves2smkEF_v1.3.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.2
+# Version    : 1.3
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
 # Updates    : Version 1.1 - added support for rate-per-hour processing
 #            : Version 1.2 - added support for SCC aggregation
+#            : Version 1.3 - made formula processing less strict regarding existing emission factors and missing pollutants to work with SCC aggregation
 #
-# Usage: moves2smkEF_v1.2.pl [-u <mysql user>] [-p <mysql password>] 
+# Usage: moves2smkEF_v1.3.pl [-u <mysql user>] [-p <mysql password>] 
 #                            [-r RPD|RPV|RPP|RPH] 
 #                            [--formulas <PollutantFormulasFile>] 
 #                            [--fuel_agg <FuelTypeMappingFile>] 
@@ -698,31 +699,26 @@ END
         my $formulaRef = $formulas[$index];
         my $outputPollName = $formulaRef->{'outputName'};
         
-        # skip formula if value already exists for output pollutant
+        my $outputVal = 0;
+        
+        # grab existing value for output pollutant
         my $outputPollIdx = undef;
         if (exists $inputPolls{$outputPollName})
         {
           $outputPollIdx = 1 + $inputPolls{$outputPollName};
           if (defined($data[$outputPollIdx]))
           {
-            next;
+            $outputVal = $data[$outputPollIdx];
           }
         }
-        
-        my $outputVal = 0;
         
         for my $termRef (@{$formulaRef->{'terms'}})
         {
           my $dataPos = 1 + $inputPolls{$termRef->{'inputName'}};
-          # if data doesn't exist for an input pollutant, skip this formula
+          # if data doesn't exist for an input pollutant, skip this term
           if (defined($data[$dataPos]))
           {
             $outputVal += $data[$dataPos] * $termRef->{'factor'};
-          }
-          else
-          {
-            $outputVal = undef;
-            last;
           }
         }
 
