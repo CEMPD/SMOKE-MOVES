@@ -27,7 +27,7 @@
 #  B.H. Baek (UNC)   16 Apr 2014 : Updated to support MOVES2014
 #  C. Allen (CSC)    08 Oct 2014 v1.1: Additional updates to support MOVES2014
 #  C. Seppanen (UNC) 23 Mar 2015 v1.2: Revised import XML to use newer <fuel> element
-#  C. Seppanen (UNC) 23 Apr 2015 v1.3: Removed reference to old regionalfuels database
+#  C. Seppanen (UNC) 23 Apr 2015 v1.3: Removed references to old external databases in runspecs
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -1472,9 +1472,6 @@ sub RD_writeRunSpec
 
    &pollProc (1);   # pass the column of interest for this runspec type
 
-   printf OUTFL "\t<databaseselections>\n";
-   printf OUTFL "\t</databaseselections>\n";
-   
    &rspend();
 }  # end subroutine RD_writeRunSpec
 
@@ -1537,9 +1534,6 @@ sub RV_writeRunSpec
 
    &pollProc (2);   # pass the column of interest for this runspec type
 
-   printf OUTFL "\t<databaseselections>\n";
-   printf OUTFL "\t</databaseselections>\n";
-   
    &rspend();
 }  # end subroutine RV_writeRunSpec
 
@@ -1602,9 +1596,6 @@ sub VV_writeRunSpec
 
    &pollProc (3);   # pass the column of interest for this runspec type
 
-   printf OUTFL "\t<databaseselections>\n";
-   printf OUTFL "\t</databaseselections>\n";
-   
    &rspend();
 }  # end subroutine VV_writeRunSpec
 
