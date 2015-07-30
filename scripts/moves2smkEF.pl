@@ -1,16 +1,17 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.3.pl
+# Filename   : moves2smkEF_v1.4.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.3
+# Version    : 1.4
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
 # Updates    : Version 1.1 - added support for rate-per-hour processing
 #            : Version 1.2 - added support for SCC aggregation
 #            : Version 1.3 - made formula processing less strict regarding existing emission factors and missing pollutants to work with SCC aggregation
+#            : Version 1.4 - fix column name handling for CAS numbers as output pollutant names
 #
-# Usage: moves2smkEF_v1.3.pl [-u <mysql user>] [-p <mysql password>] 
+# Usage: moves2smkEF_v1.4.pl [-u <mysql user>] [-p <mysql password>] 
 #                            [-r RPD|RPV|RPP|RPH] 
 #                            [--formulas <PollutantFormulasFile>] 
 #                            [--fuel_agg <FuelTypeMappingFile>] 
@@ -579,7 +580,7 @@ END
     {
       my $pollName = $keptPollMap{$pollID};
       push(@output, <<END);
-SUM(IF(PollutantID = $pollID, $columnName, NULL)) AS $pollName
+SUM(IF(PollutantID = $pollID, $columnName, NULL)) AS `$pollName`
 END
     }
   }
@@ -668,7 +669,7 @@ sub ProcessFormulas
     {
       my $sth = $dbh->prepare(<<END);
 ALTER TABLE $tableName
- ADD COLUMN ($outputPollName double)
+ ADD COLUMN (`$outputPollName` double)
 END
       $sth->execute() or die 'Error executing query: ' . $sth->errstr;
       
@@ -684,7 +685,7 @@ END
       $inputPolls{$inputPollList[$index]} = $index;
     }
     
-    my $pollListStr = join(',', @inputPollList);
+    my $pollListStr = join(',', map {qq|`$_`|} @inputPollList);
     my $loop_sth = $dbh->prepare(<<END);
 SELECT id, $pollListStr
   FROM $tableName
@@ -726,7 +727,7 @@ END
         {
           my $sth = $dbh->prepare(<<END);
 UPDATE $tableName
-   SET $outputPollName = ?
+   SET `$outputPollName` = ?
  WHERE id = ?
 END
           $sth->bind_param(1, $outputVal);
@@ -789,7 +790,7 @@ END
     print $outFH join(',', @{$headerListRef}) . "\n";
 
     # output data
-    my $colList = join(',', @{$headerListRef});
+    my $colList = join(',', map {qq|`$_`|} @{$headerListRef});
     $sth = $dbh->prepare(<<END);
   SELECT $colList
     FROM $tableName 
