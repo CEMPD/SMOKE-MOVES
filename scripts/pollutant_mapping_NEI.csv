@@ -1,0 +1,130 @@
+"MOVES2014 Pollutant ID","MOVES2014 Pollutant Name","SMOKE Pollutant/Model Species Name","mole/mass"
+1,"Total Gaseous Hydrocarbons","THC_INV","mass"
+2,"Carbon Monoxide (CO)","CO_INV","mass"
+3,"Oxides of Nitrogen (NOx)","NOX","mass"
+5,"Methane (CH4)","CH4_INV","mass"
+6,"Nitrous Oxide (N2O)","N2O_INV","mass"
+20,"Benzene","71432","mass"
+21,"Ethanol","ETHANOL","mass"
+22,"MTBE","1634044","mass"
+23,"Naphthalene particle","91203_p","mass"
+24,"1,3-Butadiene","106990","mass"
+25,"Formaldehyde","50000","mass"
+26,"Acetaldehyde","75070","mass"
+27,"Acrolein","107028","mass"
+30,"Ammonia (NH3)","NH3_INV","mass"
+31,"Sulfur Dioxide (SO2)","SO2_INV","mass"
+32,"Nitrogen Oxide (NO)","NO_INV","mass"
+33,"Nitrogen Dioxide (NO2)","NO2_INV","mass"
+34,"Nitrous Acid (HONO)","HONO_INV","mass"
+35,"Nitrate (NO3)","PNO3","mass"
+36,"Ammonium (NH4)","PNH4","mass"
+40,"2,2,4-Trimethylpentane","540841","mass"
+41,"Ethyl Benzene","100414","mass"
+42,"Hexane","110543","mass"
+43,"Propionaldehyde","123386","mass"
+44,"Styrene","100425","mass"
+45,"Toluene","108883","mass"
+46,"Xylene","1330207","mass"
+51,"Chloride","PCL","mass"
+52,"Sodium","PNA","mass"
+53,"Potassium","PK","mass"
+54,"Magnesium","PMG","mass"
+55,"Calcium","PCA","mass"
+56,"Titanium","PTI","mass"
+57,"Silicon","PSI","mass"
+58,"Aluminum","PAL","mass"
+59,"Iron","PFE","mass"
+60,"Mercury Elemental Gaseous","200","mass"
+61,"Mercury Divalent Gaseous","201","mass"
+62,"Mercury Particulate","202","mass"
+63,"Arsenic Compounds","7440382","mass"
+64,"Chromium 3+","16065831","mass"
+65,"Chromium 6+","18540299","mass"
+66,"Manganese Compounds","7439965","mass"
+67,"Nickel Compounds","7440020","mass"
+68,"Dibenzo(a,h)anthracene particle","53703_p","mass"
+69,"Fluoranthene particle","206440_p","mass"
+70,"Acenaphthene particle","83329_p","mass"
+71,"Acenaphthylene particle","208968_p","mass"
+72,"Anthracene particle","120127_p","mass"
+73,"Benz(a)anthracene particle","56553_p","mass"
+74,"Benzo(a)pyrene particle","50328_p","mass"
+75,"Benzo(b)fluoranthene particle","205992_p","mass"
+76,"Benzo(g,h,i)perylene particle","191242_p","mass"
+77,"Benzo(k)fluoranthene particle","207089_p","mass"
+78,"Chrysene particle","218019_p","mass"
+81,"Fluorene particle","86737_p","mass"
+82,"Indeno(1,2,3,c,d)pyrene particle","193395_p","mass"
+83,"Phenanthrene particle","85018_p","mass"
+84,"Pyrene particle","129000_p","mass"
+86,"Total Organic Gases","TOG","mass"
+87,"Volatile Organic Compounds","VOC_INV","mass"
+88,"NonHAPTOG","NONHAPTOG","mass"
+90,"Atmospheric CO2","CO2_INV","mass"
+100,"Primary Exhaust PM10  - Total","PM10","mass"
+101,"Primary PM10 - Organic Carbon","POC10","mass"
+102,"Primary PM10 - Elemental Carbon","PEC10","mass"
+105,"Primary PM10 - Sulfate Particulate","PSO410","mass"
+106,"Primary PM10 - Brakewear Particulate","BRAKEPM10","mass"
+107,"Primary PM10 - Tirewear Particulate","TIREPM10","mass"
+110,"Primary Exhaust PM2.5 - Total","PM2_5","mass"
+111,"Organic Carbon","POC","mass"
+112,"Elemental Carbon","PEC","mass"
+115,"Sulfate Particulate","PSO4","mass"
+116,"Primary PM2.5 - Brakewear Particulate","PM25BRAKE","mass"
+117,"Primary PM2.5 - Tirewear Particulate","PM25TIRE","mass"
+119,"H2O (aerosol)","PH2O","mass"
+121,"CMAQ5.0 Unspeciated (PMOTHR)","PMOTHR","mass"
+122,"Non-carbon Organic Matter (NCOM)","PNCOM","mass"
+130,"1,2,3,7,8,9-Hexachlorodibenzo-p-Dioxin","19408743",mass
+131,"Octachlorodibenzo-p-dioxin","3268879",mass
+132,"1,2,3,4,6,7,8-Heptachlorodibenzo-p-Dioxin","35822469",mass
+133,"Octachlorodibenzofuran","39001020",mass
+134,"1,2,3,4,7,8-Hexachlorodibenzo-p-Dioxin","39227286",mass
+135,"1,2,3,7,8-Pentachlorodibenzo-p-Dioxin","40321764",mass
+136,"2,3,7,8-Tetrachlorodibenzofuran","51207319",mass
+137,"1,2,3,4,7,8,9-Heptachlorodibenzofuran","55673897",mass
+138,"2,3,4,7,8-Pentachlorodibenzofuran","57117314",mass
+139,"1,2,3,7,8-Pentachlorodibenzofuran","57117416",mass
+140,"1,2,3,6,7,8-Hexachlorodibenzofuran","57117449",mass
+141,"1,2,3,6,7,8-Hexachlorodibenzo-p-Dioxin","57653857",mass
+142,"2,3,7,8-Tetrachlorodibenzo-p-Dioxin","1746016",mass
+143,"2,3,4,6,7,8-Hexachlorodibenzofuran","60851345",mass
+144,"1,2,3,4,6,7,8-Heptachlorodibenzofuran","67562394",mass
+145,"1,2,3,4,7,8-Hexachlorodibenzofuran","70648269",mass
+146,"1,2,3,7,8,9-Hexachlorodibenzofuran","72918219",mass
+168,"Dibenzo(a,h)anthracene gas","53703_g",mass
+169,"Fluoranthene gas","206440_g",mass
+170,"Acenaphthene gas","83329_g",mass
+171,"Acenaphthylene gas","208968_g",mass
+172,"Anthracene gas","120127_g",mass
+173,"Benz(a)anthracene gas","56553_g",mass
+174,"Benzo(a)pyrene gas","50328_g",mass
+175,"Benzo(b)fluoranthene gas","205992_g",mass
+176,"Benzo(g,h,i)perylene gas","191242_g",mass
+177,"Benzo(k)fluoranthene gas","207089_g",mass
+178,"Chrysene gas","218019_g",mass
+181,"Fluorene gas","86737_g",mass
+182,"Indeno(1,2,3,c,d)pyrene gas","193395_g",mass
+183,"Phenanthrene gas","85018_g",mass
+184,"Pyrene gas","129000_g",mass
+185,"Naphthalene gas","91203_g",mass
+1001,"CB05_ALD2","ALD2","gmole"
+1002,"CB05_ALDX","ALDX","gmole"
+1003,"CB05_BENZENE","BENZENE","gmole"
+1004,"CB05_CH4","CH4","gmole"
+1005,"CB05_ETH","ETH","gmole"
+1006,"CB05_ETHA","ETHA","gmole"
+1007,"CB05_ETOH","ETOH","gmole"
+1008,"CB05_FORM","FORM","gmole"
+1009,"CB05_IOLE","IOLE","gmole"
+1010,"CB05_ISOP","ISOP","gmole"
+1011,"CB05_MEOH","MEOH","gmole"
+1012,"CB05_OLE","OLE","gmole"
+1013,"CB05_PAR","PAR","gmole"
+1014,"CB05_TERP","TERP","gmole"
+1015,"CB05_TOL","TOL","gmole"
+1016,"CB05_UNK","UNK","gmole"
+1017,"CB05_UNR","UNR","gmole"
+1018,"CB05_XYL","XYL","gmole"
