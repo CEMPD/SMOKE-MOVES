@@ -1,12 +1,13 @@
 #!/usr/bin/perl
 #
-# Filename   : gen_8digit_scc_v1.1.pl
+# Filename   : gen_8digit_scc_v1.2.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.1
+# Version    : 1.2
 # Description: Generate mapping of 8-digit SCCs to aggregated SCCs.
 # Updates    : Version 1.1 - switch to querying database for list of SCCs
+#              Version 1.2 - handle dropped SCCs
 #
-# Usage: gen_8digit_scc_v1.1.pl [-u <mysql user>] [-p <mysql password>]
+# Usage: gen_8digit_scc_v1.2.pl [-u <mysql user>] [-p <mysql password>]
 #                               -r RPD|RPV|RPP|RPH
 #                               [--fuel_agg <FuelTypeMappingFile>]
 #                               [--src_agg <SourceTypeMappingFile>]
@@ -119,6 +120,7 @@ my $dbh = DBI->connect($connectionInfo, $sqlUser, $sqlPass) or die "Could not co
 my $sth = $dbh->prepare(<<END);
   SELECT $scc_sql AS agg_scc
     FROM $runInfo{$runType}
+   WHERE $scc_sql IS NOT NULL
 GROUP BY agg_scc
 ORDER BY agg_scc
 END
