@@ -1,0 +1,127 @@
+	<runspec version="MOVES2014-20140722">
+	<description><![CDATA[RunSpec Generator for MOVES2014 - RP_06001_2011_1_profM2011010001]]></description>
+	<models>
+		<model value="ONROAD"/>
+	</models>
+	<modelscale value="Rates"/>
+	<modeldomain value="SINGLE"/>
+	<geographicselections>
+		<geographicselection type="COUNTY" key="6001" description=""/>
+	</geographicselections>
+	<timespan>
+		<year key="2011"/>
+		<month id="1"/>
+		<day id="5"/>
+		<day id="2"/>
+		<beginhour id="1"/>
+		<endhour id="24"/>
+		<aggregateBy key="Hour"/>
+	</timespan>
+	<onroadvehicleselections>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="11" sourcetypename="Motorcycle"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="21" sourcetypename="Passenger Car"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="31" sourcetypename="Passenger Truck"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="32" sourcetypename="Light Commercial Truck"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="42" sourcetypename="Transit Bus"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="43" sourcetypename="School Bus"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="51" sourcetypename="Refuse Truck"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="52" sourcetypename="Single Unit Short-haul Truck"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="53" sourcetypename="Single Unit Long-haul Truck"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="54" sourcetypename="Motor Home"/>
+		<onroadvehicleselection fueltypeid="1" fueltypedesc="Gasoline" sourcetypeid="61" sourcetypename="Combination Short-haul Truck"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="21" sourcetypename="Passenger Car"/> 
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="31" sourcetypename="Passenger Truck" />
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="32" sourcetypename="Light Commercial Truck"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="41" sourcetypename="Intercity Bus"/> 
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="42" sourcetypename="Transit Bus"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="43" sourcetypename="School Bus"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="51" sourcetypename="Refuse Truck"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="52" sourcetypename="Single Unit Short-haul Truck"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="53" sourcetypename="Single Unit Long-haul Truck"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="54" sourcetypename="Motor Home"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="61" sourcetypename="Combination Short-haul Truck"/>
+		<onroadvehicleselection fueltypeid="2" fueltypedesc="Diesel Fuel" sourcetypeid="62" sourcetypename="Combination Long-haul Truck"/>
+		<onroadvehicleselection fueltypeid="3" fueltypedesc="Compressed Natural Gas (CNG)" sourcetypeid="42" sourcetypename="Transit Bus"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="11" sourcetypename="Motorcycle"/> 
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="21" sourcetypename="Passenger Car"/> 
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="31" sourcetypename="Passenger Truck" />
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="32" sourcetypename="Light Commercial Truck"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="42" sourcetypename="Transit Bus"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="43" sourcetypename="School Bus"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="51" sourcetypename="Refuse Truck"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="52" sourcetypename="Single Unit Short-haul Truck"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="53" sourcetypename="Single Unit Long-haul Truck"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="54" sourcetypename="Motor Home"/>
+		<onroadvehicleselection fueltypeid="5" fueltypedesc="Ethanol (E-85)" sourcetypeid="61" sourcetypename="Combination Short-haul Truck"/>
+	</onroadvehicleselections>
+	<offroadvehicleselections>
+	</offroadvehicleselections>
+	<offroadvehiclesccs>
+	</offroadvehiclesccs>
+	<roadtypes separateramps="false">
+		<roadtype roadtypeid="1" roadtypename="Off-Network" modelCombination="M1"/>
+	</roadtypes>
+	<pollutantprocessassociations>
+		<pollutantprocessassociation pollutantkey="22" pollutantname="MTBE" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="20" pollutantname="Benzene" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="185" pollutantname="Naphthalene gas" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="41" pollutantname="Ethyl Benzene" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="87" pollutantname="Volatile Organic Compounds" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="40" pollutantname="2,2,4-Trimethylpentane" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="1000" pollutantname="CB05 Mechanism" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="79" pollutantname="Non-Methane Hydrocarbons" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="42" pollutantname="Hexane" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="80" pollutantname="Non-Methane Organic Gases" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="1" pollutantname="Total Gaseous Hydrocarbons" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="86" pollutantname="Total Organic Gases" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="21" pollutantname="Ethanol" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="45" pollutantname="Toluene" processkey="12" processname="Evap Fuel Vapor Venting"/>
+		<pollutantprocessassociation pollutantkey="46" pollutantname="Xylene" processkey="12" processname="Evap Fuel Vapor Venting"/>
+	</pollutantprocessassociations>
+	<databaseselections>
+	</databaseselections>
+	<internalcontrolstrategies>
+	<internalcontrolstrategy classname="gov.epa.otaq.moves.master.implementation.ghg.internalcontrolstrategies.rateofprogress.RateOfProgressStrategy"><![CDATA[ useParameters	No ]]></internalcontrolstrategy>
+	</internalcontrolstrategies>
+	<inputdatabase servername="" databasename="" description=""/>
+	<uncertaintyparameters uncertaintymodeenabled="false" numberofrunspersimulation="0" numberofsimulations="0"/>
+	<geographicoutputdetail description="LINK"/>
+	<outputemissionsbreakdownselection>
+		<modelyear selected="false"/>
+		<fueltype selected="true"/>
+		<emissionprocess selected="true"/>
+		<onroadoffroad selected="true"/>
+		<roadtype selected="true"/>
+		<sourceusetype selected="true"/>
+		<movesvehicletype selected="false"/>
+		<onroadscc selected="true"/>
+		<estimateuncertainty selected="false" numberOfIterations="2" keepSampledData="false" keepIterations="false"/>
+		<sector selected="false"/>
+		<engtechid selected="false"/>
+		<hpclass selected="false"/>
+		<regclassid selected="false"/>
+	</outputemissionsbreakdownselection>
+	<outputdatabase servername="localhost" databasename="06001_2011_OZONETOXICSPMGHG" description=""/>
+	<outputtimestep value="Hour"/>
+	<outputvmtdata value="false"/>
+	<outputsho value="false"/>
+	<outputsh value="false"/>
+	<outputshp value="false"/>
+	<outputshidling value="false"/>
+	<outputstarts value="false"/>
+	<outputpopulation value="false"/>
+	<scaleinputdatabase servername="localhost" databasename="RP_06001_2011_1_profM2011010001_in" description=""/>
+	<pmsize value="0"/>
+	<outputfactors>
+		<timefactors selected="true" units="Hours"/>
+		<distancefactors selected="true" units="Miles"/>
+		<massfactors selected="true" units="Grams" energyunits="Joules"/>
+	</outputfactors>
+	<savedata>
+	</savedata>
+	<donotexecute>
+	</donotexecute>
+	<generatordatabase shouldsave="false" servername="" databasename="" description=""/>
+		<donotperformfinalaggregation selected="false"/>
+	<lookuptableflags scenarioid="RP_06001_2011_1_profM2011010001" truncateoutput="true" truncateactivity="true" truncatebaserates="true"/>
+</runspec>
