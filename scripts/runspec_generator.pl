@@ -28,6 +28,7 @@
 #  C. Allen (CSC)    08 Oct 2014 v1.1: Additional updates to support MOVES2014
 #  C. Seppanen (UNC) 23 Mar 2015 v1.2: Revised import XML to use newer <fuel> element
 #  C. Seppanen (UNC) 23 Apr 2015 v1.3: Removed references to old external databases in runspecs
+#  C. Seppanen (UNC) 30 Jul 2015 v1.4: Added CB6 species
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -143,7 +144,7 @@ my ( @pollsOutList );
                 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 
 		78, 79, 80, 81, 82, 83, 84, 86, 87, 90, 91, 100, 106, 107, 110, 111, 112, 115, 116, 117, 118, 119, 121, 
 		122, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 168, 169, 170, 
-		171, 172, 173, 174, 175, 176, 177, 178, 181, 182, 183, 184, 185, 1000 );
+		171, 172, 173, 174, 175, 176, 177, 178, 181, 182, 183, 184, 185, 1000, 1500 );
 
 @pollsListName = ("Total Gaseous Hydrocarbons",
                  "Carbon Monoxide (CO)",
@@ -255,7 +256,8 @@ my ( @pollsOutList );
                  "Phenanthrene gas",
                  "Pyrene gas",
                  "Naphthalene gas",
-                 "CB05 Mechanism");
+                 "CB05 Mechanism",
+                 "CB6 Mechanism");
 
 
 @pollOptions = ("OZONE", "PM", "TOXICS", "GHG");
@@ -264,9 +266,9 @@ my ( @pollsOutList );
 #  Taken from the design document of Task4, Table 4.
 #  For MOVES2014 edits, C. Allen placed most of the newer pollutants under "TOXICS", except PM species.
 #  I don't know how often these pollutant subset options are used in practice.
-@pollsByOptionOZONE = (1,5,79,80,86,87,2,3,32,33,34,1000);
+@pollsByOptionOZONE = (1,5,79,80,86,87,2,3,32,33,34,1000,1500);
 @pollsByOptionTOXICS = (1,5,79,80,86,87,20,21,22,23,24,25,26,27,100,91,40,41,42,43,44,45,46,60,61,62,54,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,81,82,83,84,
-                        130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,168,169,170,171,172,173,174,175,176,177,178,181,182,183,184,185,1000);
+                        130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,168,169,170,171,172,173,174,175,176,177,178,181,182,183,184,185,1000,1500);
 @pollsByOptionPM = (1,5,79,80,86,87,3,30,32,33,34,31,100,106,107,110,111,112,115,116,117,118,119,121,122,91,20,35,36,51,52,53,54,55,56,57,58,59);
 @pollsByOptionGHG = (90,91,5,6);
 
@@ -965,6 +967,18 @@ $PollProc_tablemap{"100018"} = "110";
 $PollProc_tablemap{"100019"} = "110";
 $PollProc_tablemap{"100090"} = "010";
 $PollProc_tablemap{"100091"} = "010";
+$PollProc_tablemap{"150001"} = "100";
+$PollProc_tablemap{"150002"} = "010";
+$PollProc_tablemap{"150011"} = "110";
+$PollProc_tablemap{"150012"} = "101";
+$PollProc_tablemap{"150013"} = "110";
+$PollProc_tablemap{"150015"} = "100";
+$PollProc_tablemap{"150016"} = "010";
+$PollProc_tablemap{"150017"} = "010";
+$PollProc_tablemap{"150018"} = "110";
+$PollProc_tablemap{"150019"} = "110";
+$PollProc_tablemap{"150090"} = "010";
+$PollProc_tablemap{"150091"} = "010";
 
 #=========================================================================================================
 # Read  RUN CONTROL file
