@@ -50,3 +50,34 @@ After MOVES finishes running, generate emission factor files:
     runspec_files/06001/06001_2011outputDBs.txt \
     scripts/pollutant_mapping_AQ_CB05.csv efs/06001/
 ```
+
+## Data sources
+
+### County-specific MOVES data
+
+The CSV files in `inputs/06001/` are extracted from the representative county database `c06001y2011_20150301` available from the EPA at ftp://ftp.epa.gov/EmisInventory/2011v6/v2platform/2011emissions/onroad/2011RepCDBs-030115versions.zip
+
+File|Database Table
+----|---
+agedistribution.csv|sourcetypeagedistribution
+avgspeeddistribution.csv|avgspeeddistribution
+dayvmtfraction.csv|dayvmtfraction
+fuelavft.csv|avft
+fuelformulation.csv|fuelformulation
+fuelsupply.csv|fuelsupply
+fuelusage.csv|fuelusagefraction
+hourvmtfraction.csv|hourvmtfraction
+hpmsvtypeyear.csv|hpmsvtypeyear
+imcoverage.csv|imcoverage
+monthvmtfraction.csv|monthvmtfraction
+population.csv|sourcetypeyear
+roadtypedistribution.csv|roadtypedistribution
+
+### Meteorology files
+
+```
+inputs/MOVES_DAILY_12US2_2011001-2011365.txt
+inputs/MOVES_RH_DAILY_12US2_2011001-2011365.txt
+```
+
+These [Met4moves](https://www.cmascenter.org/smoke/documentation/3.6.5/html/ch06s07.html) output files are extracted from the national versions available from the EPA at ftp://ftp.epa.gov/EmisInventory/2011v6/v2platform/2011emissions/onroad/2011NEIv2_SMOKE_MOVES2014_met.zip
