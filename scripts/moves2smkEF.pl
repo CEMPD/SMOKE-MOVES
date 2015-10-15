@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.4.pl
+# Filename   : moves2smkEF_v1.5.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.4
+# Version    : 1.5
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
@@ -10,8 +10,9 @@
 #            : Version 1.2 - added support for SCC aggregation
 #            : Version 1.3 - made formula processing less strict regarding existing emission factors and missing pollutants to work with SCC aggregation
 #            : Version 1.4 - fix column name handling for CAS numbers as output pollutant names
+#            : Version 1.5 - added support for process-specific output pollutants
 #
-# Usage: moves2smkEF_v1.4.pl [-u <mysql user>] [-p <mysql password>] 
+# Usage: moves2smkEF_v1.5.pl [-u <mysql user>] [-p <mysql password>] 
 #                            [-r RPD|RPV|RPP|RPH] 
 #                            [--formulas <PollutantFormulasFile>] 
 #                            [--fuel_agg <FuelTypeMappingFile>] 
@@ -115,15 +116,30 @@ open($pollFH, "<", $pollutantFile) or die "Unable to open pollutant mapping file
 
 our %keptPollMap;   # map of MOVES IDs to pollutant names
 our %keptPollNames; # list of valid pollutant names
+our %keptPollProcMap; # map of MOVES IDs to list of process-specific output pollutants
 
 while (my $line = <$pollFH>)
 {
   chomp($line);
 
-  my ($pollID, $pollName) = ($line =~ /^(\d+),"[^"]+","([^"]+)"/);
+  # example lines:
+  #   1,"Total Gaseous Hydrocarbons","THC_INV","mass"
+  #   88,"NonHAPTOG","EXH_NHTOG","mass","1 2 15 16"
+  # notes:
+  #   MOVES2014 pollutant ID (column 1) must be integer, not in quotes
+  #   MOVES2014 and SMOKE pollutant names (columns 2 and 3) must be in quotes
+  #   list of MOVES2014 process IDs (column 5) is optional, must be in quotes
+  my ($pollID, $pollName, $procList) = ($line =~ /^(\d+),"[^"]+","([^"]+)",[^,]+,?(?:"([^"]+)")?$/);
   next unless $pollID && $pollName; # skip lines without data
 
-  $keptPollMap{$pollID} = $pollName;
+  if ($procList && scalar split(' ', $procList) > 0)
+  {
+    push(@{$keptPollProcMap{$pollID}}, {'name' => $pollName, 'list' => [split(' ', $procList)]});
+  }
+  else
+  {
+    $keptPollMap{$pollID} = $pollName;
+  }
   $keptPollNames{$pollName} = 1;
 }
 
@@ -583,6 +599,17 @@ END
       push(@output, <<END);
 SUM(IF(PollutantID = $pollID, $columnName, NULL)) AS `$pollName`
 END
+    }
+    if (exists $keptPollProcMap{$pollID})
+    {
+      for my $outputList (@{$keptPollProcMap{$pollID}})
+      {
+        my $pollName = $outputList->{'name'};
+        my $procList = join(',', map { sprintf("'%02d'", $_) } @{$outputList->{'list'}});
+        push(@output, <<END);
+SUM(IF(PollutantID = $pollID AND SUBSTR(SCC, 9, 2) IN ($procList), $columnName, NULL)) AS `$pollName`
+END
+      }
     }
   }
   
