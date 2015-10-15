@@ -570,6 +570,7 @@ sub BuildPollutantQuery
   my $sth = $dbh->prepare(<<END);
 SELECT DISTINCT pollutantID
   FROM $tableName
+ ORDER BY pollutantID
 END
   $sth->execute() or die 'Error executing query: ' . $sth->errstr;
   
@@ -665,7 +666,7 @@ sub ProcessFormulas
   if (scalar(@validFormulas))
   {
     # add columns for any new pollutants
-    for my $outputPollName (keys %newPolls)
+    for my $outputPollName (sort keys %newPolls)
     {
       my $sth = $dbh->prepare(<<END);
 ALTER TABLE $tableName
