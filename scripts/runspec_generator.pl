@@ -29,6 +29,7 @@
 #  C. Seppanen (UNC) 23 Mar 2015 v1.2: Revised import XML to use newer <fuel> element
 #  C. Seppanen (UNC) 23 Apr 2015 v1.3: Removed references to old external databases in runspecs
 #  C. Seppanen (UNC) 30 Jul 2015 v1.4: Added CB6 species
+#  C. Seppanen (UNC) 20 Oct 2015 v1.5: Add optional mode selection in control.in
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -61,8 +62,8 @@ $GenCSH = ($#ARGV > 1 && $ARGV[2] eq "-csh") ? 1 : 0;
 
 # run control variables
 my ($line, $i, $j, $ip, $ic, $jj, @line);
-my ($dbhost, $batchrun, $outdir, $moveshome, $modelyear, $User_polls, $dayofweek, $MetFile, $RPMetFile);
-my (@User_polls, @dayofweek);
+my ($dbhost, $batchrun, $outdir, $moveshome, $modelyear, $User_polls, $dayofweek, $MetFile, $RPMetFile, $user_modes);
+my (@User_polls, @dayofweek, @user_modes);
 my ($pollsFlg, $WeekDayFlag, $WeekEndFlag);
 
 # repcounty variables
@@ -980,6 +981,8 @@ $PollProc_tablemap{"150019"} = "110";
 $PollProc_tablemap{"150090"} = "010";
 $PollProc_tablemap{"150091"} = "010";
 
+my %modeOptions = ("RPD" => 0, "RPV" => 0, "RPP" => 0, "RPH" => 0);
+
 #=========================================================================================================
 # Read  RUN CONTROL file
 #=========================================================================================================
@@ -1021,6 +1024,7 @@ while (<CONTROLFILE>)
         if (uc trim($line[0]) eq "DAYOFWEEK")        { $dayofweek        = uc trim($line[1]); last NXTLINE; }
         if (uc trim($line[0]) eq "METFILE")          { $MetFile          = trim($line[1]); last NXTLINE; }
 	if (uc trim($line[0]) eq "RPMETFILE")        { $RPMetFile        = trim($line[1]); last NXTLINE; }
+        if (uc trim($line[0]) eq "MODES")            { $user_modes       = uc trim($line[1]); last NXTLINE; }
     }
 }
 
@@ -1030,6 +1034,7 @@ close CONTROLFILE;
 # split up the multiple-value inputs -------------
 @User_polls = split(/,/, $User_polls);
 @dayofweek  = split(/,/, $dayofweek);
+@user_modes = split(/,/, $user_modes);
 
 # Verify user run control file contains valid parameters ----------------
 
@@ -1065,6 +1070,20 @@ if ( $WeekDayFlag == 0 && $WeekEndFlag == 0 ) {
 # check last character of output directory name - it must include the slash
 die "ERROR - invalid pathname OUTDIR ('$outdir'). Directory name must end in a slash."
 if !( (substr($outdir,-1,1) eq "/") || (substr($outdir,-1,1) eq "\\") );
+
+# check emission mode options
+for($i=0;$i<=$#user_modes;++$i) {
+  die "ERROR - invalid value for MODES ('$user_modes[$i]'). Valid values are 'RPD','RPV','RPP','RPH'."
+  unless exists $modeOptions{trim($user_modes[$i])};
+  $modeOptions{trim($user_modes[$i])} = 1;
+}
+# if no modes specified, assume all
+if (scalar(@user_modes) == 0) {
+  $modeOptions{"RPD"} = 1;
+  $modeOptions{"RPV"} = 1;
+  $modeOptions{"RPP"} = 1;
+  $modeOptions{"RPH"} = 1;
+}
 
 # end of run control file reading and parsing
  
@@ -1218,6 +1237,7 @@ while (<METFILE>)
 		$RDtemps[$RDcnt][$cntTemp] = [$repTemp, $MetRH]; 
 
 		#        --- rate per vehicle runs --- ========================================================================
+		last NXTMET unless ($modeOptions{"RPV"} || $modeOptions{"RPH"});
 		if(int($repTemp) lt 0)
 		{
 			$scenarioID = "RV_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_Tn" . abs($repTemp);
@@ -1262,59 +1282,61 @@ while (<METFILE>)
 
 # --- write the rate per distance runs
 $RDtemps[$RDcnt][0][2] = $cntTemp;  # store the final count total for last RPD file
-for ($t=0;$t<=$RDcnt;++$t)
+if ($modeOptions{"RPD"})
 {
-	# Retrieve meta data for RPD file to be written
-	$MetRep = $RDtemps[$t][0][0];
-	$MetMonth = $RDtemps[$t][0][1]; 
-	$cntTemp = $RDtemps[$t][0][2];
-	$outputDB = $MetRep . "_" . $modelyear . $pollsFlg;
-	
-	# Definte scenario ID, adjusting name for bins with negative temperature starts
-	if (int($RDtemps[$t][1][0]) lt 0)
-	{
-		$scenarioID = "RD_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_Tn" . abs($RDtemps[$t][1][0]) . "_" . int($RDtemps[$t][$cntTemp][0]);
-	} else {
-		$scenarioID = "RD_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_T" . int($RDtemps[$t][1][0]) . "_" . int($RDtemps[$t][$cntTemp][0]);
-	}
+  for ($t=0;$t<=$RDcnt;++$t)
+  {
+    # Retrieve meta data for RPD file to be written
+    $MetRep = $RDtemps[$t][0][0];
+    $MetMonth = $RDtemps[$t][0][1]; 
+    $cntTemp = $RDtemps[$t][0][2];
+    $outputDB = $MetRep . "_" . $modelyear . $pollsFlg;
+  
+    # Definte scenario ID, adjusting name for bins with negative temperature starts
+    if (int($RDtemps[$t][1][0]) lt 0)
+    {
+      $scenarioID = "RD_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_Tn" . abs($RDtemps[$t][1][0]) . "_" . int($RDtemps[$t][$cntTemp][0]);
+    } else {
+      $scenarioID = "RD_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_T" . int($RDtemps[$t][1][0]) . "_" . int($RDtemps[$t][$cntTemp][0]);
+    }
 
-	#	   --- write the meteorology MOVES input csv formatted file
-	$fileout = $outdir .  $scenarioID . "_zmh.csv";
-	open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
+    #	   --- write the meteorology MOVES input csv formatted file
+    $fileout = $outdir .  $scenarioID . "_zmh.csv";
+    open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+    printf OUTFL "monthID,zoneID,hourID,temperature,relHumidity\n";
 
-	for($i=1;$i<=24;++$i) 
-	{
-		if ($i <= $cntTemp)
-		{ 
-			printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i, $RDtemps[$t][$i][0], $RDtemps[$t][$i][1];
-		} else { 
-			printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i, $RDtemps[$t][$cntTemp][0], $RDtemps[$t][$cntTemp][1];
-		}
+    for($i=1;$i<=24;++$i) 
+    {
+      if ($i <= $cntTemp)
+      { 
+        printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i, $RDtemps[$t][$i][0], $RDtemps[$t][$i][1];
+      } else { 
+        printf OUTFL "%d,%s0,%d,%5.1f,%5.1f\n",$MetMonth,$MetRep,$i, $RDtemps[$t][$cntTemp][0], $RDtemps[$t][$cntTemp][1];
+      }
 
-	}
-	close(OUTFL);
+    }
+    close(OUTFL);
 
-	#          --- write the data importer for this runspec 
-	$fileout = $outdir . $scenarioID . "_imp.xml";
-	open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	printf IMPFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -i \"%s\"%s%s", 
-							    substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
-	printf IMPFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"importlog_".$batchrun."_".$modelyear.".txt";
-	RD_writeDataImporter();
-	close(OUTFL);
+    #          --- write the data importer for this runspec 
+    $fileout = $outdir . $scenarioID . "_imp.xml";
+    open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+    printf IMPFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -i \"%s\"%s%s", 
+                    substr($outdir,0,$olen-1),$slash,$scenarioID."_imp.xml";
+    printf IMPFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"importlog_".$batchrun."_".$modelyear.".txt";
+    RD_writeDataImporter();
+    close(OUTFL);
 
-	# Need to reset outputDB
+    # Need to reset outputDB
 
-	#          --- write the runspec file
-	$fileout = $outdir . "/".  $scenarioID . "_mrs.xml";
-	open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
-	printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
-							    substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
-	printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
-	RD_writeRunSpec();
-	close(OUTFL);
-
+    #          --- write the runspec file
+    $fileout = $outdir . "/".  $scenarioID . "_mrs.xml";
+    open (OUTFL,">$fileout") || die "Cannot open file: $fileout\n";
+    printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
+                    substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
+    printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
+    RD_writeRunSpec();
+    close(OUTFL);
+  }
 } # end of RPD write
 
 # Read the RPP met data and write for RPP
@@ -1376,7 +1398,7 @@ while (<METFILE>)
 		$fipsList{$MetRep} = 1;
 
 		#   24-hour temperature profiles required for vapor venting emissions mode
-		if ($MetProfId ne "min_max")
+		if ($modeOptions{"RPP"} && $MetProfId ne "min_max")
 		{
 			$scenarioID = "RP_" . $MetRep . "_" . $modelyear . "_" . $MetMonth . "_prof" . $MetProfId;
 
@@ -1722,7 +1744,7 @@ sub pollProc
 my ($qac);
 $qac = 0;
    printf OUTFL "\t<pollutantprocessassociations>\n";
-   foreach $pp (keys %PollProc_tablemap)
+   foreach $pp (sort keys %PollProc_tablemap)
    {
 	++$qac;
 	$process = substr($pp,-2);
