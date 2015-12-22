@@ -61,10 +61,11 @@ MOVESHOME      = $MOVES_ROOT
 BATCHRUN       = $ref_county
 OUTDIR         = $runspec_dir/
 MODELYEAR      = $BASE_YEAR
-POLLUTANTS     = OZONE, TOXICS, PM, GHG
+POLLUTANTS     = $POLLUTANT_LIST
 DAYOFWEEK      = WEEKDAY, WEEKEND
 METFILE        = $runspec_dir/METFILE.txt
 RPMETFILE      = $runspec_dir/RPMETFILE.txt
+MODES          = $EMISSION_MODES
 EOT
 
 ## link dummy data files
