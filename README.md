@@ -1,5 +1,8 @@
 # SMOKE-MOVES
-SMOKE-MOVES2014 Processing Scripts
+
+For information on installing MOVES2014a on Linux, read the [wiki page](https://github.com/CEMPD/SMOKE-MOVES/wiki/Installing-MOVES2014a-on-Linux).
+
+## SMOKE-MOVES2014 Processing Scripts
 
 This package assumes a base directory of `/opt/SMOKE-MOVES/`. Update the following input files with your installation location:
 
