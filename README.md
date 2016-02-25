@@ -1,8 +1,12 @@
 # SMOKE-MOVES
 
+SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES2014a as inputs to SMOKE. [Section 5.2](https://www.cmascenter.org/smoke/documentation/3.7/html/ch05s02.html) of the SMOKE User's Manual descibes the various scripts and files that make up SMOKE-MOVES.
+
+If you would like to download a package of SMOKE-MOVES scripts and inputs used in EPA's modeling platform, please visit the [Emissions Modeling Clearinghouse](https://www3.epa.gov/ttn/chief/emch/index.html).
+
 For information on installing MOVES2014a on Linux, read the [wiki page](https://github.com/CEMPD/SMOKE-MOVES/wiki/Installing-MOVES2014a-on-Linux).
 
-## SMOKE-MOVES2014 Processing Scripts
+## SMOKE-MOVES2014a Processing Scripts
 
 This package assumes a base directory of `/opt/SMOKE-MOVES/`. Update the following input files with your installation location:
 
@@ -11,7 +15,7 @@ inputs/countyrep.in
 inputs/06001/control.in
 ```
 
-Also, set the location of your MOVES2014 installation in `inputs/06001/control.in`:
+Also, set the location of your MOVES2014a installation in `inputs/06001/control.in`:
 
 `MOVESHOME      = /opt/MOVES2014`
 
@@ -23,7 +27,7 @@ Import custom county data:
 
 `> csh runspec_files/06001/06001_2011importer.csh`
 
-Run MOVES2014:
+Run MOVES2014a:
 
 `> csh runspec_files/06001/06001_2011runspec.csh`
 
