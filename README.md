@@ -8,7 +8,7 @@ For information on installing MOVES2014a on Linux, read the [wiki page](https://
 
 ## SMOKE-MOVES2014a Processing Scripts
 
-This package assumes a base directory of `/opt/SMOKE-MOVES/`. Update the following input files with your installation location:
+The latest version of SMOKE-MOVES can be downloaded as a [zip archive](https://github.com/CEMPD/SMOKE-MOVES/archive/master.zip). This package assumes a base directory of `/opt/SMOKE-MOVES/`. Update the following input files with your installation location:
 
 ```
 inputs/countyrep.in
