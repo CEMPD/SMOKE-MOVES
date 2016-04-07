@@ -555,7 +555,7 @@
 		<hpclass selected="false"/>
 		<regclassid selected="false"/>
 	</outputemissionsbreakdownselection>
-	<outputdatabase servername="localhost" databasename="06001_2011_OZONETOXICSPMGHG" description=""/>
+	<outputdatabase servername="localhost" databasename="06001_2011_OZONETOXICSPMGHGMETALS" description=""/>
 	<outputtimestep value="Hour"/>
 	<outputvmtdata value="false"/>
 	<outputsho value="false"/>
