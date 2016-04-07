@@ -30,6 +30,7 @@
 #  C. Seppanen (UNC) 23 Apr 2015 v1.3: Removed references to old external databases in runspecs
 #  C. Seppanen (UNC) 30 Jul 2015 v1.4: Added CB6 species
 #  C. Seppanen (UNC) 20 Oct 2015 v1.5: Add optional mode selection in control.in
+#  C. Seppanen (UNC) 07 Apr 2016 v1.6: Update pollutant groups so prerequisites are included; added METALS option
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -69,77 +70,13 @@ my ($pollsFlg, $WeekDayFlag, $WeekEndFlag);
 # repcounty variables
 my ($cntRepCnty, @repFips, @repAge, @repIM, @repFuelSup, @repFuelForm, @repFuelUsage, @repFuelAVFT, @repPop, @repVMT);
 
-my ($default_dummy);
-$default_dummy = "filename_dummy_holder.csv";
-
 #=========================================================================================================
 # Set Parameters
 #=========================================================================================================
-#
-# MOVES2010 speed bins --------------------------------------------------------------
-
-# MOVES2010 pollutant list ----------------------------------------------------------
-# MOVES2014 has many more pollutants. This list has NOT been updated for MOVES2014, but the pollsListID,
-#   pollsListName, and PollProc_tablemap have been updated.
-#
-#  poll_ID   poll_name Dependence  Pollutant
-#     1      THC                   Total Gaseous Hydrocarbons
-#     79     NMHC      THC, CH4    Non-Methane Hydrocarbons
-#     80     NMOG      NMHC        Non-Methane Organic Gases
-#     86     TOG       NMOG, CH4   Total Organic Gases
-#     87     VOC       NMHC        Volatile Organic Compounds
-#     2      CO                    Carbon Monoxide (CO)
-#     3      NOX                   Oxides of Nitrogen
-#     30     NH3                   Ammonia (NH3)
-#     32     NO        NOX         Nitrogen Oxide
-#     33     NO2       NOX         Nitrogen Dioxide
-#     34     HONO      NOX         Nitrous acid
-#     31     SO2       Tot Energy  Sulfur Dioxide (SO2)
-#     100    TOTPM10               Primary Exhaust PM10  - Total
-#     101    OCARB10   OCARB2_5    Primary PM10 - Organic Carbon
-#     102    ECARB10   ECARB2_5    Primary PM10 - Elemental Carbon
-#     105    SO4_10    Tot Energy  Primary PM10 - Sulfate Particulate
-#     106    BRAKE10               Primary PM10 - Brakewear Particulate
-#     107    TIRE10                Primary PM10 - Tirewear Particulate
-#     110    TOTPM2_5              Primary Exhaust PM2.5 - Total
-#     111    OCARB2_5              Primary PM2.5 - Organic Carbon
-#     112    ECARB2_5              Primary PM2.5 - Elemental Carbon
-#     115    SO4_2_5   Tot Energy  Primary PM2.5 - Sulfate Particulate
-#     116    BRAKE2_5              Primary PM2.5 - Brakewear Particulate
-#     117    TIRE2_5               Primary PM2.5 - Tirewear Particulate
-#     91     TENERGY               Total Energy Consumption
-#     5      CH4                   Methane (CH4)
-#     6      N20                   Nitrous Oxide (N2O)
-#     90     CO2       Tot Energy  Atmospheric CO2
-#     20     BENZ      VOC         Benzene
-#     21     ETHA      VOC         Ethanol
-#     22     MTBE      VOC         MTBE
-#     23     NAPH      THC,TOTPM10 Naphthalene
-#     24     BUTA      VOC         1,3-Butadiene
-#     25     FORM      VOC         Formaldehyde
-#     26     ACET      VOC         Acetaldehyde
-#     27     ACRO      VOC         Acrolein
-#     40     TRMEPN224 VOC         2,2,4-Trimethylpentane 
-#     41     ETHYLBENZ VOC         Ethyl Benzene
-#     42     HEXANE    VOC         Hexane
-#     43     PROPIONAL VOC         Propionaldehyde
-#     44     STYRENE   VOC         Styrene
-#     45     TOLUENE   VOC         Toluene
-#     46     XYL       VOC         Xylene
-#     60     HG                    Mercury Elemental Gaseous
-#     61     HGIIGAS               Mercury Divalen Gaseous
-#     62     PHGI                  Mercury Particulate
   
-my ( @pollOptions, @pollsListID, @pollsListName); # @pollsList
-my ( @pollsByOptionOZONE, @pollsByOptionTOXICS, @pollsByOptionPM, @pollsByOptionGHG );
+my ( @pollOptions, @pollsListID, @pollsListName);
+my ( @pollsByOptionOZONE, @pollsByOptionTOXICS, @pollsByOptionPM, @pollsByOptionGHG, @pollsByOptionMETALS );
 my ( @pollsOutList );
-
-# C. Allen: pollsList is not actually used
-#@pollsList = ( "MOVES1", "MOVES2", "MOVES3", "MOVES5", "MOVES6", "MOVES20", "MOVES21", "MOVES22", "MOVES23", "MOVES24", "MOVES25", "MOVES26", "MOVES27", "MOVES30", "MOVES31", "MOVES32", "MOVES33", "MOVES34", "MOVES35", "MOVES36", "MOVES40", "MOVES41", "MOVES42", "MOVES43", "MOVES44", "MOVES45", "MOVES46",
-#                "MOVES51", "MOVES52", "MOVES53", "MOVES54", "MOVES55", "MOVES56", "MOVES57", "MOVES58", "MOVES59", "MOVES60", "MOVES61", "MOVES62", "MOVES63", "MOVES65", "MOVES66", "MOVES67", "MOVES68", "MOVES69", "MOVES70", "MOVES71", "MOVES72", "MOVES73", "MOVES74", "MOVES75", "MOVES76", "MOVES77",
-#		"MOVES78", "MOVES79", "MOVES80", "MOVES81", "MOVES82", "MOVES83", "MOVES84", "MOVES86", "MOVES87", "MOVES90", "MOVES91", "MOVES100", "MOVES106", "MOVES107", "MOVES110", "MOVES111", "MOVES112", "MOVES115", "MOVES116", "MOVES117", "MOVES118", "MOVES119", "MOVES121",
-#		"MOVES122", "MOVES130", "MOVES131", "MOVES132", "MOVES133", "MOVES134", "MOVES135", "MOVES136", "MOVES137", "MOVES138", "MOVES139", "MOVES140", "MOVES141", "MOVES142", "MOVES143", "MOVES144", "MOVES145", "MOVES146", "MOVES168", "MOVES169", "MOVES170",
-#		"MOVES171", "MOVES172", "MOVES173", "MOVES174", "MOVES175", "MOVES176", "MOVES177", "MOVES178", "MOVES181", "MOVES182", "MOVES183", "MOVES184", "MOVES185", "MOVES1000");
 
 @pollsListID = ( 1, 2, 3, 5, 6, 20, 21, 22, 23, 24, 25, 26, 27, 30, 31, 32, 33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 
                 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 
@@ -261,17 +198,20 @@ my ( @pollsOutList );
                  "CB6 Mechanism");
 
 
-@pollOptions = ("OZONE", "PM", "TOXICS", "GHG");
+@pollOptions = ("OZONE", "PM", "TOXICS", "GHG", "METALS");
 
 #  A subset of MOVES2010 pollutants are generated for each user option specified.
 #  Taken from the design document of Task4, Table 4.
 #  For MOVES2014 edits, C. Allen placed most of the newer pollutants under "TOXICS", except PM species.
 #  I don't know how often these pollutant subset options are used in practice.
-@pollsByOptionOZONE = (1,5,79,80,86,87,2,3,32,33,34,1000,1500);
-@pollsByOptionTOXICS = (1,5,79,80,86,87,20,21,22,23,24,25,26,27,100,91,40,41,42,43,44,45,46,60,61,62,54,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,81,82,83,84,
-                        130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,168,169,170,171,172,173,174,175,176,177,178,181,182,183,184,185,1000,1500);
-@pollsByOptionPM = (1,5,79,80,86,87,3,30,32,33,34,31,100,106,107,110,111,112,115,116,117,118,119,121,122,91,20,35,36,51,52,53,54,55,56,57,58,59);
-@pollsByOptionGHG = (90,91,5,6);
+#  March 2016 - reorganized options and made sure all prerequisites are included for each set;
+#    see https://github.com/CEMPD/SMOKE-MOVES/wiki/Runspec-generator-pollutant-options
+@pollsByOptionOZONE = (1,2,3,5,20,21,22,23,24,25,26,27,32,33,34,40,41,42,43,44,45,46,79,80,86,87,185,1000,1500);
+@pollsByOptionPM = (1,30,31,35,36,51,52,53,54,55,56,57,58,59,66,91,100,106,107,110,111,112,115,116,117,118,119,121,122);
+@pollsByOptionTOXICS = (1,68,69,70,71,72,73,74,75,76,77,78,79,81,82,83,84,87,111,115,118,119,
+130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,168,169,170,171,172,173,174,175,176,177,178,181,182,183,184);
+@pollsByOptionGHG = (1,5,6,90,91);
+@pollsByOptionMETALS = (1,60,61,62,63,65,67);
 
 # Process Types ------------------------------------------------------------------
 my (@processID, %processName, %PollProc_tablemap);
@@ -993,7 +933,7 @@ my %modeOptions = ("RPD" => 0, "RPV" => 0, "RPP" => 0, "RPH" => 0);
 #          BATCHRUN	= CENRAP
 #          OUTDIR       = C:\Program Files\MOVES20091214\runspec_files\tests\
 #          MODELYEAR	= 2005
-#          POLLUTANTS 	= OZONE, TOXICS, PM, GHG
+#          POLLUTANTS 	= OZONE, TOXICS, PM, GHG, METALS
 #          DAYOFWEEK	= WEEKDAY, WEEKEND
 #          METFILE	= c:\movesdata\cenrap\2005\MOVES_RH_2005.csv
 #          RPMETFILE    = c:\movesdata\cenrap\2005\2005_repcounty_met.in
@@ -1048,7 +988,7 @@ for($i=0;$i<=$#User_polls;++$i) {
 	for($j=0;$j<=$#pollOptions;++$j) {
 		goto NXTPOLL if ( uc trim($User_polls[$i]) eq $pollOptions[$j] );
 	}
-	die "ERROR - invalid value for POLLUTANTS ('$User_polls[$i]'). Valid values are 'OZONE','TOXICS','HC','PM','GHG'.";
+	die "ERROR - invalid value for POLLUTANTS ('$User_polls[$i]'). Valid values are 'OZONE','TOXICS','HC','PM','GHG','METALS'.";
 NXTPOLL:
 }
 $pollsFlg = "_";
@@ -1126,6 +1066,7 @@ for($i=0;$i<=$#User_polls;++$i) {
 		&setPollsList(@pollsByOptionTOXICS) if ( uc trim($User_polls[$i]) eq "TOXICS" );
 		&setPollsList(@pollsByOptionPM)     if ( uc trim($User_polls[$i]) eq "PM" );
 		&setPollsList(@pollsByOptionGHG)    if ( uc trim($User_polls[$i]) eq "GHG" );
+		&setPollsList(@pollsByOptionMETALS) if ( uc trim($User_polls[$i]) eq "METALS" );
 	}
 }
 
