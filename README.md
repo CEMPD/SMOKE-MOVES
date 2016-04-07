@@ -1,6 +1,6 @@
 # SMOKE-MOVES
 
-SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES2014a as inputs to SMOKE. [Section 5.2](https://www.cmascenter.org/smoke/documentation/3.7/html/ch05s02.html) of the SMOKE User's Manual descibes the various scripts and files that make up SMOKE-MOVES.
+SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES2014a as inputs to SMOKE. [Section 5.2](https://www.cmascenter.org/smoke/documentation/3.7/html/ch05s02.html) of the SMOKE User's Manual describes the various scripts and files that make up SMOKE-MOVES.
 
 If you would like to download a package of SMOKE-MOVES scripts and inputs used in EPA's modeling platform, please visit the [Emissions Modeling Clearinghouse](https://www3.epa.gov/ttn/chief/emch/index.html).
 
