@@ -1,0 +1,21 @@
+# database connection parameters
+DB_HOST = localhost
+DB_USER =
+DB_PASS =
+DB_NAME = <no default>
+DB_TABLE = allequip
+
+# pollutant mapping file name, maps pollutant IDs to names
+POLLUTANTS = <no default>
+
+# optional process mapping file, maps process IDs to names and aggregates processes
+PROCESSES =
+
+# include NONHAPTOG speciation profile IDs in output names (Y or N)
+USE_SPC_ID = N
+
+# output file name
+OUTPUT = <no default>
+
+# optionally enable debug mode (Y or N)
+DEBUG = N

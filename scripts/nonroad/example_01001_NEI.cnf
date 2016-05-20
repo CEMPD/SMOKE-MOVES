@@ -1,0 +1,21 @@
+# database connection parameters
+DB_HOST = localhost
+DB_USER = moves
+DB_PASS = moves
+DB_NAME = nr2014_c01001
+DB_TABLE = allequip
+
+# pollutant mapping file name, maps pollutant IDs to names
+POLLUTANTS = /opt/SMOKE-MOVES/scripts/nonroad/pollutant_mapping_NEI.csv
+
+# optional process mapping file, maps process IDs to names and aggregates processes
+PROCESSES = /opt/SMOKE-MOVES/scripts/nonroad/process_mapping_NEI.csv
+
+# include NONHAPTOG speciation profile IDs in output names (Y or N)
+USE_SPC_ID = N
+
+# output file name
+OUTPUT = /opt/SMOKE-MOVES/scripts/nonroad/inv_example_01001_NEI.csv
+
+# optionally enable debug mode (Y or N)
+DEBUG = N
