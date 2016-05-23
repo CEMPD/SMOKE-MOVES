@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 #
-# Filename   : nonroad2inv.pl
+# Filename   : moves2smk_nrinv.pl
 # Author     : Catherine Seppanen, UNC
 # Version    : 1.0
 # Description: Generate FF10 nonroad inventories from NONROAD MySQL tables.
 #
-# Usage: nonroad2inv.pl <ConfigurationFile>
+# Usage: moves2smk_nrinv.pl <ConfigurationFile>
 # where
 #   ConfigurationFile - text file containing configuration parameters like database connection information, pollutant mapping, output file, and other options
 
