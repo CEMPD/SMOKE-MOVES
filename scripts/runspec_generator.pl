@@ -31,6 +31,7 @@
 #  C. Seppanen (UNC) 30 Jul 2015 v1.4: Added CB6 species
 #  C. Seppanen (UNC) 20 Oct 2015 v1.5: Add optional mode selection in control.in
 #  C. Seppanen (UNC) 07 Apr 2016 v1.6: Update pollutant groups so prerequisites are included; added METALS option
+#  C. Seppanen (UNC) 26 Sep 2017 v1.7: Directly use county databases instead of importing CSV files
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -68,7 +69,7 @@ my (@User_polls, @dayofweek, @user_modes);
 my ($pollsFlg, $WeekDayFlag, $WeekEndFlag);
 
 # repcounty variables
-my ($cntRepCnty, @repFips, @repAge, @repIM, @repFuelSup, @repFuelForm, @repFuelUsage, @repFuelAVFT, @repPop, @repVMT);
+my ($cntRepCnty, @repFips, @repCDB);
 
 #=========================================================================================================
 # Set Parameters
@@ -1096,14 +1097,7 @@ while (<REPFILE>)
     if (($line eq "") || (substr($line, 0, 1) eq "#"))    { last NXTREP; }
     if (uc substr($line,0,10) eq "<REPCOUNTY")            { ++$cntRepCnty; last NXTREP; }
     if (uc trim($line[0]) eq "FIPS")                      { $repFips[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "AGE")                       { $repAge[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "IM")                        { $repIM[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "FUELSUPPLY")                { $repFuelSup[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "FUELFORM")                  { $repFuelForm[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "FUELUSAGE")                 { $repFuelUsage[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "FUELAVFT")                  { $repFuelAVFT[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "POP")                       { $repPop[$cntRepCnty] = trim($line[1]); last NXTREP; }
-    if (uc trim($line[0]) eq "HPMSVMT")                   { $repVMT[$cntRepCnty] = trim($line[1]); last NXTREP; }
+    if (uc trim($line[0]) eq "CDB")                       { $repCDB[$cntRepCnty] = trim($line[1]); last NXTREP; }
     }
 }
 #qa printf "check repcounty in repc %s\n",$repFips[$cntRepCnty];
@@ -1718,42 +1712,6 @@ sub dataImporter
 {
    printf OUTFL "\t<databaseselection servername=\"localhost\" databasename=\"%s\"/>\n",$scenarioID."_in";
 
-   printf OUTFL "\t<agedistribution>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<sourceTypeAgeDistribution>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repAge[$cntyidx];
-   printf OUTFL "\t\t\t</sourceTypeAgeDistribution>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</agedistribution>\n";
-
-   printf OUTFL "\t<avgspeeddistribution>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<avgSpeedDistribution>\n";
-   printf OUTFL "\t\t\t<filename>%sdummy_avgspeeddistribution.csv</filename>\n",$outdir;
-   printf OUTFL "\t\t\t</avgSpeedDistribution>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</avgspeeddistribution>\n";
-   
-   printf OUTFL "\t<fuel>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<FuelSupply>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelSup[$cntyidx];
-   printf OUTFL "\t\t\t</FuelSupply>\n";
-   printf OUTFL "\t\t\t<FuelFormulation>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelForm[$cntyidx];
-   printf OUTFL "\t\t\t</FuelFormulation>\n";
-   printf OUTFL "\t\t\t<FuelUsageFraction>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelUsage[$cntyidx];
-   printf OUTFL "\t\t\t</FuelUsageFraction>\n";
-   printf OUTFL "\t\t\t<AVFT>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repFuelAVFT[$cntyidx];
-   printf OUTFL "\t\t\t</AVFT>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</fuel>\n";
-
    printf OUTFL "\t<zonemonthhour>\n";
    printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
    printf OUTFL "\t\t<parts>\n";
@@ -1762,60 +1720,6 @@ sub dataImporter
    printf OUTFL "\t\t\t</zoneMonthHour>\n";
    printf OUTFL "\t\t</parts>\n";
    printf OUTFL "\t</zonemonthhour>\n";
-
-   printf OUTFL "\t<rampfraction>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<roadType>\n";
-   printf OUTFL "\t\t\t<filename></filename>\n";
-   printf OUTFL "\t\t\t</roadType>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</rampfraction>\n";
-
-   printf OUTFL "\t<roadtypedistribution>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<roadTypeDistribution>\n";
-   printf OUTFL "\t\t\t<filename>%sdummy_roadtypedistribution.csv</filename>\n",$outdir;
-   printf OUTFL "\t\t\t</roadTypeDistribution>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</roadtypedistribution>\n";
-
-   printf OUTFL "\t<sourcetypepopulation>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<sourceTypeYear>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n",$repPop[$cntyidx];
-   printf OUTFL "\t\t\t</sourceTypeYear>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</sourcetypepopulation>\n";
-
-   printf OUTFL "\t<vehicletypevmt>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<HPMSVTypeYear>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n",$repVMT[$cntyidx];
-   printf OUTFL "\t\t\t</HPMSVTypeYear>\n";
-   printf OUTFL "\t\t\t<monthVMTFraction>\n";
-   printf OUTFL "\t\t\t<filename>%sdummy_monthvmtfraction.csv</filename>\n",$outdir;
-   printf OUTFL "\t\t\t</monthVMTFraction>\n";
-   printf OUTFL "\t\t\t<dayVMTFraction>\n";
-   printf OUTFL "\t\t\t<filename>%sdummy_dayvmtfraction.csv</filename>\n",$outdir;
-   printf OUTFL "\t\t\t</dayVMTFraction>\n";
-   printf OUTFL "\t\t\t<hourVMTFraction>\n";
-   printf OUTFL "\t\t\t<filename>%sdummy_hourvmtfraction.csv</filename>\n",$outdir;
-   printf OUTFL "\t\t\t</hourVMTFraction>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</vehicletypevmt>\n";
-
-   printf OUTFL "\t<imcoverage>\n";
-   printf OUTFL "\t\t<description><![CDATA[]]></description>\n";
-   printf OUTFL "\t\t<parts>\n";
-   printf OUTFL "\t\t\t<IMCoverage>\n";
-   printf OUTFL "\t\t\t<filename>%s</filename>\n", $repIM[$cntyidx];
-   printf OUTFL "\t\t\t</IMCoverage>\n";
-   printf OUTFL "\t\t</parts>\n";
-   printf OUTFL "\t</imcoverage>\n";
 
    printf OUTFL "\t</importer>\n";
    printf OUTFL "</moves>\n";
@@ -1860,7 +1764,10 @@ sub rspend
    printf OUTFL "\t<outputshidling value=\"false\"/>\n";
    printf OUTFL "\t<outputstarts value=\"false\"/>\n";
    printf OUTFL "\t<outputpopulation value=\"false\"/>\n";
-   printf OUTFL "\t<scaleinputdatabase servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$scenarioID."_in";
+   printf OUTFL "\t<databaseselections>\n";
+   printf OUTFL "\t\t<databaseselection servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$scenarioID."_in";
+   printf OUTFL "\t</databaseselections>\n";
+   printf OUTFL "\t<scaleinputdatabase servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$repCDB[$cntyidx];
    printf OUTFL "\t<pmsize value=\"0\"/>\n";
    printf OUTFL "\t<outputfactors>\n";
    printf OUTFL "\t\t<timefactors selected=\"true\" units=\"Hours\"/>\n";

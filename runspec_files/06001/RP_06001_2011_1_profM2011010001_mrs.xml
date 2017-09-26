@@ -109,7 +109,10 @@
 	<outputshidling value="false"/>
 	<outputstarts value="false"/>
 	<outputpopulation value="false"/>
-	<scaleinputdatabase servername="localhost" databasename="RP_06001_2011_1_profM2011010001_in" description=""/>
+	<databaseselections>
+		<databaseselection servername="localhost" databasename="RP_06001_2011_1_profM2011010001_in" description=""/>
+	</databaseselections>
+	<scaleinputdatabase servername="localhost" databasename="c06001y2011_20150522" description=""/>
 	<pmsize value="0"/>
 	<outputfactors>
 		<timefactors selected="true" units="Hours"/>

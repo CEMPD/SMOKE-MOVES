@@ -62,23 +62,16 @@ After MOVES finishes running, generate emission factor files:
 
 ### County-specific MOVES data
 
-The CSV files in `inputs/06001/` are extracted from the representative county database `c06001y2011_20150301` available from the EPA at ftp://ftp.epa.gov/EmisInventory/2011v6/v2platform/2011emissions/onroad/2011RepCDBs-030115versions.zip
+Previously, SMOKE-MOVES loaded county-specific data into MOVES via CSV files. Now, the input file `inputs/countyrep.in` specifies the database to use for each representative county. For example:
 
-File|Database Table
-----|---
-agedistribution.csv|sourcetypeagedistribution
-avgspeeddistribution.csv|avgspeeddistribution
-dayvmtfraction.csv|dayvmtfraction
-fuelavft.csv|avft
-fuelformulation.csv|fuelformulation
-fuelsupply.csv|fuelsupply
-fuelusage.csv|fuelusagefraction
-hourvmtfraction.csv|hourvmtfraction
-hpmsvtypeyear.csv|hpmsvtypeyear
-imcoverage.csv|imcoverage
-monthvmtfraction.csv|monthvmtfraction
-population.csv|sourcetypeyear
-roadtypedistribution.csv|roadtypedistribution
+```
+<REPCOUNTY>
+FIPS=06001
+CDB=c06001y2011_20150522
+<ENDREPCOUNTY>
+```
+
+Default county input database are available for download from the EPA at ftp://ftp.epa.gov/EmisInventory/2011v6/v3platform/2011emissions/2011RepCDBs_20151208.zip
 
 ### Meteorology files
 

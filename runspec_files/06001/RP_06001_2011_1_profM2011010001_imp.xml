@@ -77,39 +77,6 @@
 	</pollutantprocessassociations>
 		</filters>
 	<databaseselection servername="localhost" databasename="RP_06001_2011_1_profM2011010001_in"/>
-	<agedistribution>
-		<description><![CDATA[]]></description>
-		<parts>
-			<sourceTypeAgeDistribution>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/agedistribution.csv</filename>
-			</sourceTypeAgeDistribution>
-		</parts>
-	</agedistribution>
-	<avgspeeddistribution>
-		<description><![CDATA[]]></description>
-		<parts>
-			<avgSpeedDistribution>
-			<filename>/opt/SMOKE-MOVES/runspec_files/06001/dummy_avgspeeddistribution.csv</filename>
-			</avgSpeedDistribution>
-		</parts>
-	</avgspeeddistribution>
-	<fuel>
-		<description><![CDATA[]]></description>
-		<parts>
-			<FuelSupply>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/fuelsupply.csv</filename>
-			</FuelSupply>
-			<FuelFormulation>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/fuelformulation.csv</filename>
-			</FuelFormulation>
-			<FuelUsageFraction>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/fuelusage.csv</filename>
-			</FuelUsageFraction>
-			<AVFT>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/fuelavft.csv</filename>
-			</AVFT>
-		</parts>
-	</fuel>
 	<zonemonthhour>
 		<description><![CDATA[]]></description>
 		<parts>
@@ -118,54 +85,5 @@
 			</zoneMonthHour>
 		</parts>
 	</zonemonthhour>
-	<rampfraction>
-		<description><![CDATA[]]></description>
-		<parts>
-			<roadType>
-			<filename></filename>
-			</roadType>
-		</parts>
-	</rampfraction>
-	<roadtypedistribution>
-		<description><![CDATA[]]></description>
-		<parts>
-			<roadTypeDistribution>
-			<filename>/opt/SMOKE-MOVES/runspec_files/06001/dummy_roadtypedistribution.csv</filename>
-			</roadTypeDistribution>
-		</parts>
-	</roadtypedistribution>
-	<sourcetypepopulation>
-		<description><![CDATA[]]></description>
-		<parts>
-			<sourceTypeYear>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/population.csv</filename>
-			</sourceTypeYear>
-		</parts>
-	</sourcetypepopulation>
-	<vehicletypevmt>
-		<description><![CDATA[]]></description>
-		<parts>
-			<HPMSVTypeYear>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/hpmsvtypeyear.csv</filename>
-			</HPMSVTypeYear>
-			<monthVMTFraction>
-			<filename>/opt/SMOKE-MOVES/runspec_files/06001/dummy_monthvmtfraction.csv</filename>
-			</monthVMTFraction>
-			<dayVMTFraction>
-			<filename>/opt/SMOKE-MOVES/runspec_files/06001/dummy_dayvmtfraction.csv</filename>
-			</dayVMTFraction>
-			<hourVMTFraction>
-			<filename>/opt/SMOKE-MOVES/runspec_files/06001/dummy_hourvmtfraction.csv</filename>
-			</hourVMTFraction>
-		</parts>
-	</vehicletypevmt>
-	<imcoverage>
-		<description><![CDATA[]]></description>
-		<parts>
-			<IMCoverage>
-			<filename>/opt/SMOKE-MOVES/inputs/06001/imcoverage.csv</filename>
-			</IMCoverage>
-		</parts>
-	</imcoverage>
 	</importer>
 </moves>

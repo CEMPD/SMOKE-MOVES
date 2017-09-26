@@ -1,11 +1,4 @@
 <REPCOUNTY>
 FIPS=06001
-AGE=/opt/SMOKE-MOVES/inputs/06001/agedistribution.csv
-IM=/opt/SMOKE-MOVES/inputs/06001/imcoverage.csv
-FUELSUPPLY=/opt/SMOKE-MOVES/inputs/06001/fuelsupply.csv
-FUELFORM=/opt/SMOKE-MOVES/inputs/06001/fuelformulation.csv
-FUELUSAGE=/opt/SMOKE-MOVES/inputs/06001/fuelusage.csv
-FUELAVFT=/opt/SMOKE-MOVES/inputs/06001/fuelavft.csv
-POP=/opt/SMOKE-MOVES/inputs/06001/population.csv
-HPMSVMT=/opt/SMOKE-MOVES/inputs/06001/hpmsvtypeyear.csv
+CDB=c06001y2011_20150522
 <ENDREPCOUNTY>
