@@ -71,7 +71,7 @@ CDB=c06001y2011_20150522
 <ENDREPCOUNTY>
 ```
 
-Default county input database are available for download from the EPA at ftp://ftp.epa.gov/EmisInventory/2011v6/v3platform/2011emissions/2011RepCDBs_20151208.zip
+Default county input databases are available for download from the EPA at ftp://ftp.epa.gov/EmisInventory/2011v6/v3platform/2011emissions/2011RepCDBs_20151208.zip (2017 and 2023 are also available).
 
 ### Meteorology files
 
