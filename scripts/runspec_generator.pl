@@ -1309,7 +1309,7 @@ while (<METFILE>)
 		if ($oldornew eq "new") {@line = split(',', $_);} 
 		if (($oldornew eq "old") || ($oldornew eq "unknown")) {@line = split(/\s+/, $_);}
 
-		$MetRep = substr(trim($line[0]),1,5);
+		$MetRep = substr(trim($line[0]),-5);
 		$cntyidx = &getRepCnty();
 		if ($cntyidx <= 0) {die "ERROR : Repcounty input file incomplete.  Missing county:  $MetRep\nREPCOUNTY packets must exist for all FIPS in input met file.\n";}
 
