@@ -107,7 +107,7 @@ $pollSql .= 'ELSE NULL END';
 # check if speciation profile IDs should be appended to names
 if (exists $config{'USE_SPC_ID'} && $config{'USE_SPC_ID'} eq 'Y')
 {
-  $pollSql .= ", IFNULL(nrtogspecprofileid, '')";
+  $pollSql .= ", IFNULL(speciationProfileID, '')";
 }
 
 #================================================================================================
@@ -162,7 +162,7 @@ my $dbHost = exists $config{'DB_HOST'} ? $config{'DB_HOST'} : "localhost";
 my $dbUser = exists $config{'DB_USER'} ? $config{'DB_USER'} : "";
 my $dbPass = exists $config{'DB_PASS'} ? $config{'DB_PASS'} : "";
 my $dbName = $config{'DB_NAME'};
-my $dbTable = "allequip";
+my $dbTable = "movesoutput";
 if (exists $config{'DB_TABLE'} && length($config{'DB_TABLE'}))
 {
   $dbTable = $config{'DB_TABLE'};
