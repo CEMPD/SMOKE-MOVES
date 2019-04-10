@@ -1,8 +1,8 @@
 # SMOKE-MOVES
 
-SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES2014a as inputs to SMOKE. [Section 5.2](https://www.cmascenter.org/smoke/documentation/3.7/html/ch05s02.html) of the SMOKE User's Manual describes the various scripts and files that make up SMOKE-MOVES.
+SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES2014a as inputs to SMOKE. [Section 5.2](https://www.cmascenter.org/smoke/documentation/4.6/html/ch05s02.html) of the SMOKE User's Manual describes the various scripts and files that make up SMOKE-MOVES.
 
-If you would like to download a package of SMOKE-MOVES scripts and inputs used in EPA's modeling platform, please visit the [Emissions Modeling Clearinghouse](https://www3.epa.gov/ttn/chief/emch/index.html).
+If you would like to download a package of SMOKE-MOVES scripts and inputs used in EPA's modeling platform, please visit the EPA's [Emissions Modeling Platforms](https://www.epa.gov/air-emissions-modeling/emissions-modeling-platforms) page.
 
 For information on installing MOVES2014a on Linux, read the [wiki page](https://github.com/CEMPD/SMOKE-MOVES/wiki/Installing-MOVES2014a-on-Linux).
 
@@ -52,6 +52,11 @@ After MOVES finishes running, generate emission factor files:
     runspec_files/06001/06001_2011outputDBs.txt \
     scripts/pollutant_mapping_AQ_CB05.csv efs/06001/
 > scripts/moves2smkEF.pl -r RPH \
+    --formulas scripts/pollutant_formulas_AQ.txt \
+    --proc_agg scripts/process_aggregation.csv \
+    runspec_files/06001/06001_2011outputDBs.txt \
+    scripts/pollutant_mapping_AQ_CB05.csv efs/06001/
+> scripts/moves2smkEF.pl -r RPS \
     --formulas scripts/pollutant_formulas_AQ.txt \
     --proc_agg scripts/process_aggregation.csv \
     runspec_files/06001/06001_2011outputDBs.txt \

@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.5.pl
+# Filename   : moves2smkEF_v1.6.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.5
+# Version    : 1.6
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
@@ -11,9 +11,10 @@
 #            : Version 1.3 - made formula processing less strict regarding existing emission factors and missing pollutants to work with SCC aggregation
 #            : Version 1.4 - fix column name handling for CAS numbers as output pollutant names
 #            : Version 1.5 - added support for process-specific output pollutants
+#            : Version 1.6 - added support for rate-per-start processing
 #
-# Usage: moves2smkEF_v1.5.pl [-u <mysql user>] [-p <mysql password>] 
-#                            [-r RPD|RPV|RPP|RPH] 
+# Usage: moves2smkEF_v1.6.pl [-u <mysql user>] [-p <mysql password>] 
+#                            [-r RPD|RPV|RPP|RPH|RPS] 
 #                            [--formulas <PollutantFormulasFile>] 
 #                            [--fuel_agg <FuelTypeMappingFile>] 
 #                            [--src_agg <SourceTypeMappingFile>] 
@@ -23,7 +24,7 @@
 # where
 #   mysql user - MySQL user with table creation and write privileges in the MOVES databases
 #   mysql password - password for the MySQL user (if needed)
-#   RPD|RPP|RPV|RPH - optional type of emission factors to process (rate-per-distance, rate-per-vehicle, rate-per-profile, or rate-per-hour); if not specified, script will process all four types
+#   RPD|RPP|RPV|RPH|RPS - optional type of emission factors to process (rate-per-distance, rate-per-vehicle, rate-per-profile, rate-per-hour, or rate-per-start); if not specified, script will process all five types
 #   PollutantFormulasFile - list of formulas used to calculate additional emission factors
 #   FuelTypeMappingFile - list of MOVES fuel type IDs and corresponding aggregated fuel type ID
 #   SourceTypeMappingFile - list of MOVES source type IDs and corresponding aggregated source type ID
@@ -58,13 +59,13 @@ GetOptions('user|u:s' => \$sqlUser,
            'road_agg=s' => \$roadAggFile, 
            'proc_agg=s' => \$procAggFile);
 
-if ($runType && $runType ne 'RPD' && $runType ne 'RPV' && $runType ne 'RPP' && $runType ne 'RPH')
+if ($runType && $runType ne 'RPD' && $runType ne 'RPV' && $runType ne 'RPP' && $runType ne 'RPH' && $runType ne 'RPS')
 {
-  die "Please specify a valid type after '-r': RPD, RPV, RPP, or RPH. To run all types do not use '-r' argument.\n";
+  die "Please specify a valid type after '-r': RPD, RPV, RPP, RPH, or RPS. To run all types do not use '-r' argument.\n";
 }
 
 (scalar(@ARGV) >= 2) or die <<END;
-Usage: $0 [-u <mysql user>] [-p <mysql password>] [-r RPD|RPV|RPP|RPH] 
+Usage: $0 [-u <mysql user>] [-p <mysql password>] [-r RPD|RPV|RPP|RPH|RPS] 
   [--formulas <PollutantFormulasFile>] 
   [--fuel_agg <FuelTypeMappingFile>] 
   [--src_agg <SourceTypeMappingFile>] 
@@ -239,7 +240,7 @@ if ($fuelAggFile || $srcAggFile || $roadAggFile || $procAggFile)
 #================================================================================================
 # Remove existing list files
 
-for my $typeInfo (['RPD', 'distance'], ['RPV', 'vehicle'], ['RPP', 'profile'], ['RPH', 'hour'])
+for my $typeInfo (['RPD', 'distance'], ['RPV', 'vehicle'], ['RPP', 'profile'], ['RPH', 'hour'], ['RPS', 'start'])
 {
   my ($thisType, $thisName) = @$typeInfo;
   if (!$runType || $runType eq $thisType)
@@ -267,7 +268,8 @@ for my $db (@dbList)
 DROP TABLE IF EXISTS rateperdistance_smoke,
                      ratepervehicle_smoke,
                      rateperprofile_smoke,
-                     rateperhour_smoke
+                     rateperhour_smoke,
+                     rateperstart_smoke
 END
   $sth->execute() or die 'Error executing query: ' . $sth->errstr;
   
@@ -525,6 +527,56 @@ END
   }
 
   #================================================================================================
+  # Process rate per start factors
+
+  if (!$runType || $runType eq 'RPS')
+  {
+    printf "\n  Starting rate per start processing...\n";
+
+    # create table with columns for each pollutant
+    my $sql = <<END;
+  CREATE TABLE rateperstart_smoke
+               (id INT PRIMARY KEY AUTO_INCREMENT)
+  SELECT MOVESScenarioID,
+         yearID,
+         monthID,
+         dayID,
+         hourID,
+         IF(LENGTH(zoneID) = 6,
+            SUBSTR(zoneID, 1, 5),
+            SUBSTR(zoneID, 1, 4)) AS FIPS,
+         $scc_sql AS agg_scc,
+         temperature
+END
+
+    my $pollQuery = BuildPollutantQuery('rateperstart', 'ratePerStart');
+    $sql .= ", $pollQuery" if $pollQuery;
+
+    $sql .= <<END;
+    FROM rateperstart
+   WHERE $scc_sql IS NOT NULL
+GROUP BY MOVESScenarioID, yearID, monthID, dayID, hourID,
+         FIPS, agg_scc, temperature
+ORDER BY temperature ASC,
+         dayID ASC,
+         agg_scc ASC,
+         hourID ASC
+END
+    $sth = $dbh->prepare($sql);
+    $sth->execute() or die 'Error executing query: ' . $sth->errstr;
+
+    printf "  - Completed rateperstart_smoke at %s\n", scalar(localtime());
+
+    # build list of columns for output file header and pollutants in table
+    my ($headerListRef, $pollsInTableRef) = BuildHeaderList('rateperstart_smoke');
+    
+    ProcessFormulas('rateperstart_smoke', $pollsInTableRef, $headerListRef);
+
+    # generate output files for each reference county and fuel month
+    GenerateOutput('rateperstart_smoke', $db, $outDir, $headerListRef);
+  }
+
+  #================================================================================================
   # Clean up temporary tables
 
   if (!$debug)
@@ -533,7 +585,8 @@ END
 DROP TABLE IF EXISTS rateperdistance_smoke,
                      ratepervehicle_smoke,
                      rateperprofile_smoke,
-                     rateperhour_smoke
+                     rateperhour_smoke,
+                     rateperstart_smoke
 END
     $sth->execute() or die 'Error executing query: ' . $sth->errstr;
   }
