@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.6.pl
+# Filename   : moves2smkEF_v1.6.1.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.6
+# Version    : 1.6.1
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
@@ -12,8 +12,9 @@
 #            : Version 1.4 - fix column name handling for CAS numbers as output pollutant names
 #            : Version 1.5 - added support for process-specific output pollutants
 #            : Version 1.6 - added support for rate-per-start processing
+#            : Version 1.6.1 - improve formula processing time
 #
-# Usage: moves2smkEF_v1.6.pl [-u <mysql user>] [-p <mysql password>] 
+# Usage: moves2smkEF_v1.6.1.pl [-u <mysql user>] [-p <mysql password>] 
 #                            [-r RPD|RPV|RPP|RPH|RPS] 
 #                            [--formulas <PollutantFormulasFile>] 
 #                            [--fuel_agg <FuelTypeMappingFile>] 
@@ -703,8 +704,7 @@ sub ProcessFormulas
   return unless scalar(@formulas);
   
   my @validFormulas; # list of indexes into global formulas array
-  my %inputPolls;    # list of pollutants needed to calculate formulas
-  my %newPolls;      # list of new pollutants created by formulas
+  my @newPolls;      # list of new pollutants created by formulas
 
   for my $index (0..(scalar(@formulas) - 1))
   {
@@ -714,11 +714,7 @@ sub ProcessFormulas
     {
       my $inputPollName = $termRef->{'inputName'};
       # check if input pollutant is present in table; if not, formula isn't valid
-      if (exists $pollsInTableRef->{$inputPollName})
-      {
-        $inputPolls{$inputPollName} = 1;
-      }
-      else
+      unless (exists $pollsInTableRef->{$inputPollName})
       {
         $missing = 1;
         last;
@@ -729,16 +725,10 @@ sub ProcessFormulas
     {
       push(@validFormulas, $index);
       my $outputPollName = $formulas[$index]{'outputName'};
-      if ($pollsInTableRef->{$outputPollName})
-      {
-        # add output pollutant to list of columns to select; when calculating
-        # formula, will need to check if data already exists for pollutant
-        $inputPolls{$outputPollName} = 1;
-      }
-      else
+      unless ($pollsInTableRef->{$outputPollName})
       {
         # add output pollutant to list of new pollutants to create
-        $newPolls{$outputPollName} = 1;
+        push(@newPolls, $outputPollName);
       }
     }
   }
@@ -746,7 +736,7 @@ sub ProcessFormulas
   if (scalar(@validFormulas))
   {
     # add columns for any new pollutants
-    for my $outputPollName (sort keys %newPolls)
+    for my $outputPollName (sort @newPolls)
     {
       my $sth = $dbh->prepare(<<END);
 ALTER TABLE $tableName
@@ -757,68 +747,26 @@ END
       # add column to header list
       push(@$headerListRef, $outputPollName);
     }
-
-    # build array of input pollutants to select from table
-    my @inputPollList = keys %inputPolls;
-    for my $index (0..(scalar(@inputPollList) - 1))
-    {
-      # store index for each pollutant so values can be looked up by position
-      $inputPolls{$inputPollList[$index]} = $index;
-    }
     
-    my $pollListStr = join(',', map {qq|`$_`|} @inputPollList);
-    my $loop_sth = $dbh->prepare(<<END);
-SELECT id, $pollListStr
-  FROM $tableName
-END
-    $loop_sth->execute() or die 'Error executing query: ' . $loop_sth->errstr;
-    
-    while (my @data = $loop_sth->fetchrow_array())
+    for my $index (@validFormulas)
     {
-      # apply valid formulas for current data record
-      for my $index (@validFormulas)
-      {
-        my $formulaRef = $formulas[$index];
-        my $outputPollName = $formulaRef->{'outputName'};
-        
-        my $outputVal = 0;
-        
-        # grab existing value for output pollutant
-        my $outputPollIdx = undef;
-        if (exists $inputPolls{$outputPollName})
-        {
-          $outputPollIdx = 1 + $inputPolls{$outputPollName};
-          if (defined($data[$outputPollIdx]))
-          {
-            $outputVal = $data[$outputPollIdx];
-          }
-        }
-        
-        for my $termRef (@{$formulaRef->{'terms'}})
-        {
-          my $dataPos = 1 + $inputPolls{$termRef->{'inputName'}};
-          # if data doesn't exist for an input pollutant, skip this term
-          if (defined($data[$dataPos]))
-          {
-            $outputVal += $data[$dataPos] * $termRef->{'factor'};
-          }
-        }
-
-        if (defined($outputVal))
-        {
-          my $sth = $dbh->prepare(<<END);
+      my $formulaRef = $formulas[$index];
+      my $outputPollName = $formulaRef->{'outputName'};
+      
+      my $sql = <<END;
 UPDATE $tableName
-   SET `$outputPollName` = ?
- WHERE id = ?
+   SET `$outputPollName` = IFNULL(`$outputPollName`, 0)
 END
-          $sth->bind_param(1, $outputVal);
-          $sth->bind_param(2, $data[0]);
-          $sth->execute() or die 'Error executing query: ' . $sth->errstr;
-          
-          # update data for current record in case later formulas use this output
-          $data[$outputPollIdx] = $outputVal if defined($outputPollIdx);
-        }
+      
+      for my $termRef (@{$formulaRef->{'terms'}})
+      {
+        my $inputPollName = $termRef->{'inputName'};
+        my $factor = $termRef->{'factor'};
+        $sql .= " + $factor * IFNULL(`$inputPollName`, 0)";
       }
+      
+      my $sth = $dbh->prepare($sql);
+      $sth->execute() or die 'Error executing query: ' . $sth->errstr;
     }
   }
   
