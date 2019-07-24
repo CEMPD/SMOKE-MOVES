@@ -56,11 +56,6 @@ After MOVES finishes running, generate emission factor files:
     --proc_agg scripts/process_aggregation.csv \
     runspec_files/06001/06001_2011outputDBs.txt \
     scripts/pollutant_mapping_AQ_CB05.csv efs/06001/
-> scripts/moves2smkEF.pl -r RPS \
-    --formulas scripts/pollutant_formulas_AQ.txt \
-    --proc_agg scripts/process_aggregation.csv \
-    runspec_files/06001/06001_2011outputDBs.txt \
-    scripts/pollutant_mapping_AQ_CB05.csv efs/06001/
 ```
 
 ## Data sources
