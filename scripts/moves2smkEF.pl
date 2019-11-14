@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.7.pl
+# Filename   : moves2smkEF_v1.8.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.7
+# Version    : 1.8
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
@@ -14,9 +14,10 @@
 #            : Version 1.6 - added support for rate-per-start processing
 #            : Version 1.6.1 - improve formula processing time
 #            : Version 1.7 - added support for applying NOx humidity corrections
+#            : Version 1.8 - added support for rate-per-hour-oni processing
 #
-# Usage: moves2smkEF_v1.7.pl [-u <mysql user>] [-p <mysql password>]
-#                            [-r RPD|RPV|RPP|RPH|RPS] 
+# Usage: moves2smkEF_v1.8.pl [-u <mysql user>] [-p <mysql password>]
+#                            [-r RPD|RPV|RPP|RPH|RPS|RPHO]
 #                            [--formulas <PollutantFormulasFile>] 
 #                            [--fuel_agg <FuelTypeMappingFile>] 
 #                            [--src_agg <SourceTypeMappingFile>] 
@@ -28,7 +29,7 @@
 # where
 #   mysql user - MySQL user with table creation and write privileges in the MOVES databases
 #   mysql password - password for the MySQL user (if needed)
-#   RPD|RPP|RPV|RPH|RPS - optional type of emission factors to process (rate-per-distance, rate-per-vehicle, rate-per-profile, rate-per-hour, or rate-per-start); if not specified, script will process all five types
+#   RPD|RPP|RPV|RPH|RPS|RPHO - optional type of emission factors to process (rate-per-distance, rate-per-vehicle, rate-per-profile, rate-per-hour, rate-per-start, rate-per-hour-oni); if not specified, script will process all five types
 #   PollutantFormulasFile - list of formulas used to calculate additional emission factors
 #   FuelTypeMappingFile - list of MOVES fuel type IDs and corresponding aggregated fuel type ID
 #   SourceTypeMappingFile - list of MOVES source type IDs and corresponding aggregated source type ID
@@ -68,13 +69,13 @@ GetOptions('user|u:s' => \$sqlUser,
            'adjust_nox' => \$adjust_nox,
            'pressures=s' => \$pressureFile);
 
-if ($runType && $runType ne 'RPD' && $runType ne 'RPV' && $runType ne 'RPP' && $runType ne 'RPH' && $runType ne 'RPS')
+if ($runType && $runType ne 'RPD' && $runType ne 'RPV' && $runType ne 'RPP' && $runType ne 'RPH' && $runType ne 'RPS' && $runType ne 'RPHO')
 {
-  die "Please specify a valid type after '-r': RPD, RPV, RPP, RPH, or RPS. To run all types do not use '-r' argument.\n";
+  die "Please specify a valid type after '-r': RPD, RPV, RPP, RPH, RPS, or RPHO. To run all types do not use '-r' argument.\n";
 }
 
 (scalar(@ARGV) >= 2) or die <<END;
-Usage: $0 [-u <mysql user>] [-p <mysql password>] [-r RPD|RPV|RPP|RPH|RPS] 
+Usage: $0 [-u <mysql user>] [-p <mysql password>] [-r RPD|RPV|RPP|RPH|RPS|RPHO]
   [--formulas <PollutantFormulasFile>] 
   [--fuel_agg <FuelTypeMappingFile>] 
   [--src_agg <SourceTypeMappingFile>] 
@@ -278,7 +279,7 @@ if ($adjust_nox)
 #================================================================================================
 # Remove existing list files
 
-for my $typeInfo (['RPD', 'distance'], ['RPV', 'vehicle'], ['RPP', 'profile'], ['RPH', 'hour'], ['RPS', 'start'])
+for my $typeInfo (['RPD', 'distance'], ['RPV', 'vehicle'], ['RPP', 'profile'], ['RPH', 'hour'], ['RPS', 'start'], ['RPHO', 'houroni'])
 {
   my ($thisType, $thisName) = @$typeInfo;
   if (!$runType || $runType eq $thisType)
@@ -309,7 +310,8 @@ DROP TABLE IF EXISTS rateperdistance_smoke,
                      rateperprofile_smoke,
                      rateperhour_smoke,
                      rateperhour_smoke_adj,
-                     rateperstart_smoke
+                     rateperstart_smoke,
+                     rateperhouroni_smoke
 END
   $sth->execute() or die 'Error executing query: ' . $sth->errstr;
   
@@ -323,52 +325,7 @@ END
     printf "\n  Starting rate per distance processing...\n";
 
     # build where clause to select hours with unique temperatures
-    # the rate per distance table stores factors for different temperatures in different hours
-    # if more than 24 temperatures are used, then multiple MOVES runs will be made
-    $sth = $dbh->prepare(<<END);
-  SELECT DISTINCT hourID, temperature, monthID
-    FROM rateperdistance
-ORDER BY monthID, temperature, hourID
-END
-    $sth->execute() or die 'Error executing query: ' . $sth->errstr;
-    
-    my $lastMonth = 0;
-    my $monthPos = -1;
-    my @monthStats;
-    while (my ($hour, $temp, $month) = $sth->fetchrow_array())
-    {
-      if ($month != $lastMonth) {
-        $monthPos++;
-        $monthStats[$monthPos]{'month'} = $month;
-        $monthStats[$monthPos]{'recNo'} = 0;
-        $monthStats[$monthPos]{'lastTemp'} = -999.;
-        $monthStats[$monthPos]{'maxHr'} = 1;
-        $lastMonth = $month;
-      }
-      $monthStats[$monthPos]{'recNo'}++;
-      if ($temp != $monthStats[$monthPos]{'lastTemp'}) 
-      {
-        $monthStats[$monthPos]{'lastTemp'} = $temp;
-        $monthStats[$monthPos]{'maxHr'} = $hour;
-      }
-    }
-
-    my $whereClause = " ( 0";
-    for my $monthStat (@monthStats)
-    {
-      $whereClause .= " OR ( monthID = " . $monthStat->{'month'};
-      if ($monthStat->{'recNo'} == 24)
-      {
-        $whereClause .= " AND hourID <= " . $monthStat->{'maxHr'};
-      }
-      else
-      {
-        $whereClause .= " AND temperature < " . $monthStat->{'lastTemp'} .
-                        " OR ( temperature = " . $monthStat->{'lastTemp'} . " AND hourID = " . $monthStat->{'maxHr'} . " )";
-      }
-      $whereClause .= " )";
-    }
-    $whereClause .= " )";
+    my $whereClause = BuildRPDWhereClause();
     
     printf "  - Creating rateperdistance_smoke at %s\n", scalar(localtime());
     
@@ -395,6 +352,7 @@ END
     FROM rateperdistance
    WHERE $whereClause
      AND $scc_sql IS NOT NULL
+     AND roadTypeID != 1
 GROUP BY MOVESScenarioID, yearID, monthID,
          FIPS, agg_scc, avgSpeedBinID, temperature, relHumidity
 ORDER BY temperature ASC, 
@@ -642,6 +600,58 @@ END
   }
 
   #================================================================================================
+  # Process rate per hour off-network idle factors
+  
+  if (!$runType || $runType eq 'RPHO')
+  {
+    printf "\n  Starting rate per hour off-network idle processing...\n";
+
+    # build where clause to select hours with unique temperatures
+    my $whereClause = BuildRPDWhereClause();
+    
+    printf "  - Creating rateperhouroni_smoke at %s\n", scalar(localtime());
+    
+    # create table with columns for each pollutant
+    my $sql = <<END;
+  CREATE TABLE rateperhouroni_smoke
+               (id INT PRIMARY KEY AUTO_INCREMENT)
+  SELECT MOVESScenarioID,
+         yearID,
+         monthID,
+         IF(LENGTH(linkID) = 9,
+            SUBSTR(linkID, 1, 5),
+            SUBSTR(linkID, 1, 4)) AS FIPS,
+         $scc_sql AS agg_scc,
+         temperature
+END
+
+    my $pollQuery = BuildPollutantQuery('rateperdistance', 'ratePerDistance');
+    $sql .= ", $pollQuery" if $pollQuery;
+
+    $sql .= <<END;
+    FROM rateperdistance
+   WHERE $scc_sql IS NOT NULL
+     AND roadTypeID = 1
+GROUP BY MOVESScenarioID, yearID, monthID,
+         FIPS, agg_scc, temperature, relHumidity
+ORDER BY temperature ASC,
+         agg_scc ASC
+END
+    $sth = $dbh->prepare($sql);
+    $sth->execute() or die 'Error executing query: ' . $sth->errstr;
+    
+    printf "  - Completed rateperhouroni_smoke at %s\n", scalar(localtime());
+
+    # build list of columns for output file header and pollutants in table
+    my ($headerListRef, $pollsInTableRef) = BuildHeaderList('rateperhouroni_smoke');
+    
+    ProcessFormulas('rateperhouroni_smoke', $pollsInTableRef, $headerListRef);
+
+    # generate output files for each reference county and fuel month
+    GenerateOutput('rateperhouroni_smoke', $db, $outDir, $headerListRef);
+  }
+
+  #================================================================================================
   # Clean up temporary tables
 
   if (!$debug)
@@ -653,7 +663,8 @@ DROP TABLE IF EXISTS rateperdistance_smoke,
                      rateperprofile_smoke,
                      rateperhour_smoke,
                      rateperhour_smoke_adj,
-                     rateperstart_smoke
+                     rateperstart_smoke,
+                     rateperhouroni_smoke
 END
     $sth->execute() or die 'Error executing query: ' . $sth->errstr;
   }
@@ -695,6 +706,61 @@ sub BuildAggregationSQL
   close ($aggFH);
   
   return $sql;
+}
+
+# Generate where clause to select hours with unique temperatures for rate-per-distance processing
+sub BuildRPDWhereClause
+{
+  our ($dbh);
+  
+  # the rate per distance table stores factors for different temperatures in different hours
+  # if more than 24 temperatures are used, then multiple MOVES runs will be made
+  my $sth = $dbh->prepare(<<END);
+  SELECT DISTINCT hourID, temperature, monthID
+    FROM rateperdistance
+ORDER BY monthID, temperature, hourID
+END
+  $sth->execute() or die 'Error executing query: ' . $sth->errstr;
+    
+  my $lastMonth = 0;
+  my $monthPos = -1;
+  my @monthStats;
+  while (my ($hour, $temp, $month) = $sth->fetchrow_array())
+  {
+    if ($month != $lastMonth) {
+      $monthPos++;
+      $monthStats[$monthPos]{'month'} = $month;
+      $monthStats[$monthPos]{'recNo'} = 0;
+      $monthStats[$monthPos]{'lastTemp'} = -999.;
+      $monthStats[$monthPos]{'maxHr'} = 1;
+      $lastMonth = $month;
+    }
+    $monthStats[$monthPos]{'recNo'}++;
+    if ($temp != $monthStats[$monthPos]{'lastTemp'}) 
+    {
+      $monthStats[$monthPos]{'lastTemp'} = $temp;
+      $monthStats[$monthPos]{'maxHr'} = $hour;
+    }
+  }
+
+  my $whereClause = " ( 0";
+  for my $monthStat (@monthStats)
+  {
+    $whereClause .= " OR ( monthID = " . $monthStat->{'month'};
+    if ($monthStat->{'recNo'} == 24)
+    {
+      $whereClause .= " AND hourID <= " . $monthStat->{'maxHr'};
+    }
+    else
+    {
+      $whereClause .= " AND temperature < " . $monthStat->{'lastTemp'} .
+                      " OR ( temperature = " . $monthStat->{'lastTemp'} . " AND hourID = " . $monthStat->{'maxHr'} . " )";
+    }
+    $whereClause .= " )";
+  }
+  $whereClause .= " )";
+  
+  return $whereClause;
 }
 
 # Generate SQL to translate MOVES pollutant IDs to kept pollutant names
