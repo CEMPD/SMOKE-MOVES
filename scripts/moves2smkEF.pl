@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.8.pl
+# Filename   : moves2smkEF_v1.8.1.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.8
+# Version    : 1.8.1
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
@@ -15,6 +15,7 @@
 #            : Version 1.6.1 - improve formula processing time
 #            : Version 1.7 - added support for applying NOx humidity corrections
 #            : Version 1.8 - added support for rate-per-hour-oni processing
+#            : Version 1.8.1 - apply NOx humidity corrections in RPHO mode
 #
 # Usage: moves2smkEF_v1.8.pl [-u <mysql user>] [-p <mysql password>]
 #                            [-r RPD|RPV|RPP|RPH|RPS|RPHO]
@@ -311,7 +312,8 @@ DROP TABLE IF EXISTS rateperdistance_smoke,
                      rateperhour_smoke,
                      rateperhour_smoke_adj,
                      rateperstart_smoke,
-                     rateperhouroni_smoke
+                     rateperhouroni_smoke,
+                     rateperhouroni_smoke_adj
 END
   $sth->execute() or die 'Error executing query: ' . $sth->errstr;
   
@@ -622,7 +624,8 @@ END
             SUBSTR(linkID, 1, 5),
             SUBSTR(linkID, 1, 4)) AS FIPS,
          $scc_sql AS agg_scc,
-         temperature
+         temperature,
+         relHumidity
 END
 
     my $pollQuery = BuildPollutantQuery('rateperdistance', 'ratePerDistance');
@@ -643,12 +646,24 @@ END
     printf "  - Completed rateperhouroni_smoke at %s\n", scalar(localtime());
 
     # build list of columns for output file header and pollutants in table
-    my ($headerListRef, $pollsInTableRef) = BuildHeaderList('rateperhouroni_smoke');
+    my ($headerListRef, $pollsInTableRef) = BuildHeaderList('rateperhouroni_smoke', 1);
     
     ProcessFormulas('rateperhouroni_smoke', $pollsInTableRef, $headerListRef);
 
     # generate output files for each reference county and fuel month
     GenerateOutput('rateperhouroni_smoke', $db, $outDir, $headerListRef);
+    
+    if ($adjust_nox)
+    {
+      # create copy of processed table to apply humidity adjustments
+    $sth = $dbh->prepare(<<END);
+CREATE TABLE rateperhouroni_smoke_adj
+(SELECT * FROM rateperhouroni_smoke)
+END
+      $sth->execute() or die 'Error executing query: ' . $sth->errstr;
+      ApplyHumidityAdjustment('rateperhouroni_smoke_adj', $pollsInTableRef);
+      GenerateOutput('rateperhouroni_smoke_adj', $db, $outDir, $headerListRef);
+    }
   }
 
   #================================================================================================
@@ -664,7 +679,8 @@ DROP TABLE IF EXISTS rateperdistance_smoke,
                      rateperhour_smoke,
                      rateperhour_smoke_adj,
                      rateperstart_smoke,
-                     rateperhouroni_smoke
+                     rateperhouroni_smoke,
+                     rateperhouroni_smoke_adj
 END
     $sth->execute() or die 'Error executing query: ' . $sth->errstr;
   }
