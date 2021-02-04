@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
-# Filename   : moves2smkEF_v1.9.pl
+# Filename   : moves2smkEF.pl
 # Author     : Catherine Seppanen, UNC
-# Version    : 1.9
+# Version    : 1.10
 # Description: Generate SMOKE input emission factor lookup tables from MOVES2014 MySQL tables.
 #            : Version 1.0 of this script was based on moves2smk_EF_v0.38.pl for processing
 #            : MOVES2010b MySQL tables.
@@ -17,8 +17,9 @@
 #            : Version 1.8 - added support for rate-per-hour-oni processing
 #            : Version 1.8.1 - apply NOx humidity corrections in RPHO mode
 #            : Version 1.9 - added flag for indicating if NOx humidity adjustments were applied in MOVES
+#            : Version 1.10 - added checks for scenario ID
 #
-# Usage: moves2smkEF_v1.8.pl [-u <mysql user>] [-p <mysql password>]
+# Usage: moves2smkEF.pl [-u <mysql user>] [-p <mysql password>]
 #                            [-r RPD|RPV|RPP|RPH|RPS|RPHO]
 #                            [--formulas <PollutantFormulasFile>] 
 #                            [--fuel_agg <FuelTypeMappingFile>] 
@@ -377,6 +378,7 @@ END
    WHERE $whereClause
      AND $scc_sql IS NOT NULL
      AND roadTypeID != 1
+     AND MOVESScenarioID LIKE 'rd_%'
 GROUP BY MOVESScenarioID, yearID, monthID,
          FIPS, agg_scc, avgSpeedBinID, temperature, relHumidity
 ORDER BY temperature ASC, 
@@ -438,6 +440,7 @@ END
     $sql .= <<END;
     FROM ratepervehicle
    WHERE $scc_sql IS NOT NULL
+     AND MOVESScenarioID LIKE 'rv_%'
 GROUP BY MOVESScenarioID, yearID, monthID, dayID, hourID, 
          FIPS, agg_scc, temperature 
 ORDER BY temperature ASC, 
@@ -490,6 +493,7 @@ END
     $sql .= <<END;
     FROM rateperprofile 
    WHERE $scc_sql IS NOT NULL
+     AND MOVESScenarioID LIKE 'rp_%'
 GROUP BY MOVESScenarioID, yearID, monthID, dayID, hourID, 
          FIPS, agg_scc, temperature 
 ORDER BY MOVESScenarioID ASC, 
@@ -542,6 +546,7 @@ END
    WHERE hourID = 1
      AND dayID = 2 
      AND $scc_sql IS NOT NULL
+     AND MOVESScenarioID LIKE 'rv_%'
 GROUP BY MOVESScenarioID, yearID, monthID,
          FIPS, agg_scc, temperature, relHumidity
 ORDER BY temperature ASC, 
@@ -602,6 +607,7 @@ END
     $sql .= <<END;
     FROM rateperstart
    WHERE $scc_sql IS NOT NULL
+     AND MOVESScenarioID LIKE 'rv_%'
 GROUP BY MOVESScenarioID, yearID, monthID, dayID, hourID,
          FIPS, agg_scc, temperature
 ORDER BY temperature ASC,
@@ -657,6 +663,7 @@ END
     FROM rateperdistance
    WHERE $scc_sql IS NOT NULL
      AND roadTypeID = 1
+     AND MOVESScenarioID LIKE 'rd_%'
 GROUP BY MOVESScenarioID, yearID, monthID,
          FIPS, agg_scc, temperature, relHumidity
 ORDER BY temperature ASC,
