@@ -113,11 +113,14 @@ CDB=c06001y2011_20150522
 
 Default county input databases are available for download from the EPA. Note that the database schema for the county inputs changed with the release of MOVES3.
 
-For MOVES2014: ftp://newftp.epa.gov/Air/emismod/2016/v1/2016emissions/repCountyCDBs_2016_20190717.zip
+For MOVES2014:
 
-Inputs are also available for 2020, 2023, and 2028.
+- 2016: ftp://newftp.epa.gov/Air/emismod/2016/v1/2016emissions/repCountyCDBs_2016_20190717.zip
 
-For MOVES3: ftp://newftp.epa.gov/Air/MOVES3/2017/2017repCDBs_20201209.zip
+The 2016 platform also has county databases for 2020, 2023, and 2028.
+
+For MOVES3:
+- 2017: ftp://newftp.epa.gov/Air/MOVES3/2017/2017repCDBs_20201209.zip
 
 ### Meteorology files
 
@@ -127,3 +130,5 @@ inputs/MOVES_RH_DAILY_12US2_2011001-2011365.txt
 ```
 
 National versions of these [Met4moves](https://www.cmascenter.org/smoke/documentation/4.8.1/html/ch06s07.html) output files are available from the EPA at ftp://newftp.epa.gov/Air/emismod/2016/v1/ancillary_data/ge_dat_for_2016v1_other_31oct2019.zip
+
+Example Met4moves scripts are available from the EPA at ftp://newftp.epa.gov/Air/emismod/2017/met4moves_example_scripts_2017.zip
