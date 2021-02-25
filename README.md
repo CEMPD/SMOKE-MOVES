@@ -116,8 +116,9 @@ Default county input databases are available for download from the EPA. Note tha
 For MOVES2014:
 
 - 2016: ftp://newftp.epa.gov/Air/emismod/2016/v1/2016emissions/repCountyCDBs_2016_20190717.zip
+- 2017: ftp://newftp.epa.gov/air/nei/2017/doc/supporting_data/onroad/CDBs_for_rep_counties/
 
-The 2016 platform also has county databases for 2020, 2023, and 2028.
+The 2016 platform also has county databases for 2020, 2023, and 2028. For 2017, county databases are also available for all inventory counties.
 
 For MOVES3:
 - 2017: ftp://newftp.epa.gov/Air/MOVES3/2017/2017repCDBs_20201209.zip
