@@ -1635,6 +1635,7 @@ sub vehsel
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"31\" sourcetypename=\"Passenger Truck\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"32\" sourcetypename=\"Light Commercial Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"41\" sourcetypename=\"Other Buses\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"42\" sourcetypename=\"Transit Bus\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"43\" sourcetypename=\"School Bus\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"1\" fueltypedesc=\"Gasoline\" sourcetypeid=\"51\" sourcetypename=\"Refuse Truck\"/>\n";
@@ -1645,7 +1646,7 @@ sub vehsel
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/> \n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"31\" sourcetypename=\"Passenger Truck\" />\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"32\" sourcetypename=\"Light Commercial Truck\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"41\" sourcetypename=\"Intercity Bus\"/> \n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"41\" sourcetypename=\"Other Buses\"/> \n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"42\" sourcetypename=\"Transit Bus\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"43\" sourcetypename=\"School Bus\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"51\" sourcetypename=\"Refuse Truck\"/>\n";
@@ -1654,18 +1655,20 @@ sub vehsel
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"54\" sourcetypename=\"Motor Home\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"61\" sourcetypename=\"Combination Short-haul Truck\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"2\" fueltypedesc=\"Diesel Fuel\" sourcetypeid=\"62\" sourcetypename=\"Combination Long-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"41\" sourcetypename=\"Other Buses\"/> \n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"42\" sourcetypename=\"Transit Bus\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"11\" sourcetypename=\"Motorcycle\"/> \n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"43\" sourcetypename=\"School Bus\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"51\" sourcetypename=\"Refuse Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"52\" sourcetypename=\"Single Unit Short-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"53\" sourcetypename=\"Single Unit Long-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"54\" sourcetypename=\"Motor Home\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"61\" sourcetypename=\"Combination Short-haul Truck\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/> \n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"31\" sourcetypename=\"Passenger Truck\" />\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"32\" sourcetypename=\"Light Commercial Truck\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"42\" sourcetypename=\"Transit Bus\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"43\" sourcetypename=\"School Bus\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"51\" sourcetypename=\"Refuse Truck\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"52\" sourcetypename=\"Single Unit Short-haul Truck\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"53\" sourcetypename=\"Single Unit Long-haul Truck\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"54\" sourcetypename=\"Motor Home\"/>\n";
-   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"61\" sourcetypename=\"Combination Short-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/> \n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"31\" sourcetypename=\"Passenger Truck\" />\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"32\" sourcetypename=\"Light Commercial Truck\"/>\n";
    printf OUTFL "\t</onroadvehicleselections>\n";
 }  # end vehsel subroutine
 
