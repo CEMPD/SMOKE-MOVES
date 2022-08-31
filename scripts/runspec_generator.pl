@@ -83,7 +83,7 @@ my ( @pollsOutList );
                 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 
 		78, 79, 80, 81, 82, 83, 84, 86, 87, 90, 91, 100, 106, 107, 110, 111, 112, 115, 116, 117, 118, 119, 121, 
 		122, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 168, 169, 170, 
-		171, 172, 173, 174, 175, 176, 177, 178, 181, 182, 183, 184, 185, 1000, 1500 );
+		171, 172, 173, 174, 175, 176, 177, 178, 181, 182, 183, 184, 185, 1000, 1500, 2500 );
 
 @pollsListName = ("Total Gaseous Hydrocarbons",
                  "Carbon Monoxide (CO)",
@@ -196,7 +196,8 @@ my ( @pollsOutList );
                  "Pyrene gas",
                  "Naphthalene gas",
                  "CB05 Mechanism",
-                 "CB6 Mechanism");
+                 "CB6CMAQ Mechanism",
+                 "CB6AE7 Mechanism");
 
 
 @pollOptions = ("OZONE", "PM", "TOXICS", "GHG", "METALS");
@@ -207,7 +208,7 @@ my ( @pollsOutList );
 #  I don't know how often these pollutant subset options are used in practice.
 #  March 2016 - reorganized options and made sure all prerequisites are included for each set;
 #    see https://github.com/CEMPD/SMOKE-MOVES/wiki/Runspec-generator-pollutant-options
-@pollsByOptionOZONE = (1,2,3,5,20,21,23,24,25,26,27,32,33,34,40,41,42,43,44,45,46,79,80,86,87,185,1000,1500);
+@pollsByOptionOZONE = (1,2,3,5,20,21,23,24,25,26,27,32,33,34,40,41,42,43,44,45,46,79,80,86,87,185,1000,1500,2500);
 @pollsByOptionPM = (1,30,31,35,36,51,52,53,54,55,56,57,58,59,66,91,100,106,107,110,111,112,115,116,117,118,119,121,122);
 @pollsByOptionTOXICS = (1,68,69,70,71,72,73,74,75,76,77,78,79,81,82,83,84,87,111,115,118,119,
 130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,168,169,170,171,172,173,174,175,176,177,178,181,182,183,184);
@@ -921,6 +922,18 @@ $PollProc_tablemap{"150018"} = "110";
 $PollProc_tablemap{"150019"} = "110";
 $PollProc_tablemap{"150090"} = "010";
 $PollProc_tablemap{"150091"} = "010";
+$PollProc_tablemap{"250001"} = "100";
+$PollProc_tablemap{"250002"} = "010";
+$PollProc_tablemap{"250011"} = "110";
+$PollProc_tablemap{"250012"} = "101";
+$PollProc_tablemap{"250013"} = "110";
+$PollProc_tablemap{"250015"} = "100";
+$PollProc_tablemap{"250016"} = "010";
+$PollProc_tablemap{"250017"} = "010";
+$PollProc_tablemap{"250018"} = "110";
+$PollProc_tablemap{"250019"} = "110";
+$PollProc_tablemap{"250090"} = "010";
+$PollProc_tablemap{"250091"} = "010";
 
 my %modeOptions = ("RPD" => 0, "RPV" => 0, "RPP" => 0, "RPH" => 0);
 
@@ -1803,4 +1816,3 @@ sub trim
     $s =~ s/\t+$//;
     return $s; 
 }
-
