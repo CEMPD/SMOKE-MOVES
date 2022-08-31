@@ -32,6 +32,7 @@
 #  C. Seppanen (UNC) 20 Oct 2015 v1.5: Add optional mode selection in control.in
 #  C. Seppanen (UNC) 07 Apr 2016 v1.6: Update pollutant groups so prerequisites are included; added METALS option
 #  C. Seppanen (UNC) 26 Sep 2017 v1.7: Directly use county databases instead of importing CSV files
+#  C. Seppanen (UNC) 31 Aug 2022 v2.0: Updates for MOVES3.0.0
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -1444,8 +1445,8 @@ sub RD_writeRunSpec
 {
    my $evap_flg = $_[0];
    
-   printf OUTFL "\t<runspec version=\"MOVES2014-20140722\">\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2014 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES3.0.0\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES3 - %s]]></description>\n",$scenarioID;
    printf OUTFL "\t<models>\n";
    printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
    printf OUTFL "\t</models>\n";
@@ -1512,8 +1513,8 @@ sub RD_writeDataImporter
 #=========================================================================================================
 sub RV_writeRunSpec
 {
-   printf OUTFL "\t<runspec version=\"MOVES2014-20140722\">\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2014 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES3.0.0\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES3 - %s]]></description>\n",$scenarioID;
    printf OUTFL "\t<models>\n";
    printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
    printf OUTFL "\t</models>\n";
@@ -1574,8 +1575,8 @@ sub RV_writeDataImporter
 #=========================================================================================================
 sub VV_writeRunSpec
 {
-   printf OUTFL "\t<runspec version=\"MOVES2014-20140722\">\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES2014 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES3.0.0\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES3 - %s]]></description>\n",$scenarioID;
    printf OUTFL "\t<models>\n";
    printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
    printf OUTFL "\t</models>\n";
