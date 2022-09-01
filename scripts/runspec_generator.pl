@@ -1804,6 +1804,7 @@ sub rspend
    printf OUTFL "\t<outputpopulation value=\"false\"/>\n";
    printf OUTFL "\t<databaseselections>\n";
    printf OUTFL "\t\t<databaseselection servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$scenarioDB."_in";
+   printf OUTFL "\t\t<databaseselection servername=\"%s\" databasename=\"nonoxadj_moves3\" description=\"\"/>\n",$dbhost;
    printf OUTFL "\t</databaseselections>\n";
    printf OUTFL "\t<scaleinputdatabase servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$repCDB[$cntyidx];
    printf OUTFL "\t<pmsize value=\"0\"/>\n";
