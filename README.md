@@ -1,10 +1,12 @@
 # SMOKE-MOVES
 
-SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES2014 and MOVES3 as inputs to SMOKE. [Section 5.2](https://www.cmascenter.org/smoke/documentation/4.8.1/html/ch05s02.html) of the SMOKE User's Manual describes the various scripts and files that make up SMOKE-MOVES.
+SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES3 as inputs to SMOKE. [Section 3.2](https://www.cmascenter.org/smoke/documentation/4.9/html/ch03s02.html) of the SMOKE User's Manual describes the various scripts and files that make up SMOKE-MOVES.
 
-If you would like to download a package of SMOKE-MOVES scripts and inputs used in EPA's modeling platform, please visit the EPA's [Emissions Modeling Platforms](https://www.epa.gov/air-emissions-modeling/emissions-modeling-platforms) page.
+The current version of SMOKE-MOVES creates run specification files designed for use in MOVES3.0.0 through MOVES3.0.3. This version of SMOKE-MOVES hasn't been tested in MOVES3.0.4 and may not work due to the removal of chemical mechanism outputs in MOVES.
 
-For information on installing MOVES2014a on Linux, read the [wiki page](https://github.com/CEMPD/SMOKE-MOVES/wiki/Installing-MOVES2014a-on-Linux).
+<!-- If you would like to download a package of SMOKE-MOVES scripts and inputs used in EPA's modeling platform, please visit the EPA's [Emissions Modeling Platforms](https://www.epa.gov/air-emissions-modeling/emissions-modeling-platforms) page.
+
+For information on installing MOVES2014a on Linux, read the [wiki page](https://github.com/CEMPD/SMOKE-MOVES/wiki/Installing-MOVES2014a-on-Linux). -->
 
 ## SMOKE-MOVES Processing Scripts
 
