@@ -1295,6 +1295,7 @@ if ($modeOptions{"RPD"})
     printf BATFILE "java gov.epa.otaq.moves.master.commandline.MOVESCommandLine -r \"%s\"%s%s", 
                     substr($outdir,0,$olen-1),$slash,$scenarioID."_mrs.xml";
     printf BATFILE " >> \"%s\"%s%s\n", substr($outdir,0,$olen-1),$slash,"runlog_".$batchrun."_".$modelyear.".txt";
+    $scenarioID =~ s/^RE_/RD_/; # use original RD_ scenario ID in runspec
     RD_writeRunSpec(1);
     close(OUTFL);
   }
