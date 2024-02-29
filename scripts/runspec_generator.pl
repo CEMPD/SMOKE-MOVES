@@ -33,6 +33,7 @@
 #  C. Seppanen (UNC) 07 Apr 2016 v1.6: Update pollutant groups so prerequisites are included; added METALS option
 #  C. Seppanen (UNC) 26 Sep 2017 v1.7: Directly use county databases instead of importing CSV files
 #  C. Seppanen (UNC) 31 Aug 2022 v2.0: Updates for MOVES3.0.0
+#  C. Seppanen (UNC) 07 Feb 2024 v3.0: Updates for MOVES4
 #======================================================================
 #= Runspec Generator - a MOVES preprocessor utility
 #=
@@ -83,8 +84,8 @@ my ( @pollsOutList );
 @pollsListID = ( 1, 2, 3, 5, 6, 20, 21, 22, 23, 24, 25, 26, 27, 30, 31, 32, 33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 
                 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 
 		78, 79, 80, 81, 82, 83, 84, 86, 87, 90, 91, 100, 106, 107, 110, 111, 112, 115, 116, 117, 118, 119, 121, 
-		122, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 168, 169, 170, 
-		171, 172, 173, 174, 175, 176, 177, 178, 181, 182, 183, 184, 185, 1000, 1500, 2500 );
+		122, 123, 124, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 168, 169, 170, 
+		171, 172, 173, 174, 175, 176, 177, 178, 181, 182, 183, 184, 185, 1000, 1500, 2500, 3000 );
 
 @pollsListName = ("Total Gaseous Hydrocarbons",
                  "Carbon Monoxide (CO)",
@@ -163,6 +164,8 @@ my ( @pollsOutList );
                  "H2O (aerosol)",
                  "CMAQ5.0 Unspeciated (PMOTHR)",
                  "Non-carbon Organic Matter (NCOM)",
+                 "Total Organic Matter (TOM)",
+                 "Residual PM (NonECNonSO4NonOM)",
                  "1,2,3,7,8,9-Hexachlorodibenzo-p-Dioxin",
                  "Octachlorodibenzo-p-dioxin",
                  "1,2,3,4,6,7,8-Heptachlorodibenzo-p-Dioxin",
@@ -198,7 +201,8 @@ my ( @pollsOutList );
                  "Naphthalene gas",
                  "CB05 Mechanism",
                  "CB6CMAQ Mechanism",
-                 "CB6AE7 Mechanism");
+                 "CB6AE7 Mechanism",
+                 "NonHAPTOG Mechanism");
 
 
 @pollOptions = ("OZONE", "PM", "TOXICS", "GHG", "METALS");
@@ -209,8 +213,8 @@ my ( @pollsOutList );
 #  I don't know how often these pollutant subset options are used in practice.
 #  March 2016 - reorganized options and made sure all prerequisites are included for each set;
 #    see https://github.com/CEMPD/SMOKE-MOVES/wiki/Runspec-generator-pollutant-options
-@pollsByOptionOZONE = (1,2,3,5,20,21,23,24,25,26,27,32,33,34,40,41,42,43,44,45,46,79,80,86,87,185,1000,1500,2500);
-@pollsByOptionPM = (1,30,31,35,36,51,52,53,54,55,56,57,58,59,66,91,100,106,107,110,111,112,115,116,117,118,119,121,122);
+@pollsByOptionOZONE = (1,2,3,5,20,21,23,24,25,26,27,32,33,34,40,41,42,43,44,45,46,79,80,86,87,185,3000);
+@pollsByOptionPM = (1,30,31,35,36,51,52,53,54,55,56,57,58,59,66,91,100,106,107,110,111,112,115,116,117,118,119,121,122,123,124);
 @pollsByOptionTOXICS = (1,68,69,70,71,72,73,74,75,76,77,78,79,81,82,83,84,87,111,115,118,119,
 130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,168,169,170,171,172,173,174,175,176,177,178,181,182,183,184);
 @pollsByOptionGHG = (1,5,6,90,91);
@@ -765,6 +769,20 @@ $PollProc_tablemap{"12216"} = "0100";
 $PollProc_tablemap{"12217"} = "0100";
 $PollProc_tablemap{"12290"} = "0100";
 $PollProc_tablemap{"12291"} = "0100";
+$PollProc_tablemap{"12301"} = "1000";
+$PollProc_tablemap{"12302"} = "0100";
+$PollProc_tablemap{"12315"} = "1000";
+$PollProc_tablemap{"12316"} = "0100";
+$PollProc_tablemap{"12317"} = "0100";
+$PollProc_tablemap{"12390"} = "0100";
+$PollProc_tablemap{"12391"} = "0100";
+$PollProc_tablemap{"12401"} = "1000";
+$PollProc_tablemap{"12402"} = "0100";
+$PollProc_tablemap{"12415"} = "1000";
+$PollProc_tablemap{"12416"} = "0100";
+$PollProc_tablemap{"12417"} = "0100";
+$PollProc_tablemap{"12490"} = "0100";
+$PollProc_tablemap{"12491"} = "0100";
 $PollProc_tablemap{"13001"} = "1000";
 $PollProc_tablemap{"13101"} = "1000";
 $PollProc_tablemap{"13201"} = "1000";
@@ -935,6 +953,18 @@ $PollProc_tablemap{"250018"} = "0001";
 $PollProc_tablemap{"250019"} = "0001";
 $PollProc_tablemap{"250090"} = "0100";
 $PollProc_tablemap{"250091"} = "0100";
+$PollProc_tablemap{"300001"} = "1000";
+$PollProc_tablemap{"300002"} = "0100";
+$PollProc_tablemap{"300011"} = "0101";
+$PollProc_tablemap{"300012"} = "0011";
+$PollProc_tablemap{"300013"} = "0101";
+$PollProc_tablemap{"300015"} = "1000";
+$PollProc_tablemap{"300016"} = "0100";
+$PollProc_tablemap{"300017"} = "0100";
+$PollProc_tablemap{"300018"} = "0001";
+$PollProc_tablemap{"300019"} = "0001";
+$PollProc_tablemap{"300090"} = "0100";
+$PollProc_tablemap{"300091"} = "0100";
 
 my %modeOptions = ("RPD" => 0, "RPV" => 0, "RPP" => 0, "RPH" => 0);
 
@@ -1446,8 +1476,8 @@ sub RD_writeRunSpec
 {
    my $evap_flg = $_[0];
    
-   printf OUTFL "\t<runspec version=\"MOVES3.0.0\">\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES3 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES4.0\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES4 - %s]]></description>\n",$scenarioID;
    printf OUTFL "\t<models>\n";
    printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
    printf OUTFL "\t</models>\n";
@@ -1463,7 +1493,7 @@ sub RD_writeRunSpec
    printf OUTFL "\t<offroadvehiclesccs>\n";
    printf OUTFL "\t</offroadvehiclesccs>\n";
 
-   printf OUTFL "\t<roadtypes separateramps=\"false\">\n";
+   printf OUTFL "\t<roadtypes>\n";
    if ($evap_flg == 0) {
       printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\" modelCombination=\"M1\"/>\n";
    }
@@ -1514,8 +1544,8 @@ sub RD_writeDataImporter
 #=========================================================================================================
 sub RV_writeRunSpec
 {
-   printf OUTFL "\t<runspec version=\"MOVES3.0.0\">\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES3 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES4.0\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES4 - %s]]></description>\n",$scenarioID;
    printf OUTFL "\t<models>\n";
    printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
    printf OUTFL "\t</models>\n";
@@ -1531,7 +1561,7 @@ sub RV_writeRunSpec
    printf OUTFL "\t<offroadvehiclesccs>\n";
    printf OUTFL "\t</offroadvehiclesccs>\n";
 
-   printf OUTFL "\t<roadtypes separateramps=\"false\">\n";
+   printf OUTFL "\t<roadtypes>\n";
    printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\" modelCombination=\"M1\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
@@ -1576,8 +1606,8 @@ sub RV_writeDataImporter
 #=========================================================================================================
 sub VV_writeRunSpec
 {
-   printf OUTFL "\t<runspec version=\"MOVES3.0.0\">\n";
-   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES3 - %s]]></description>\n",$scenarioID;
+   printf OUTFL "\t<runspec version=\"MOVES4.0\">\n";
+   printf OUTFL "\t<description><![CDATA[RunSpec Generator for MOVES4 - %s]]></description>\n",$scenarioID;
    printf OUTFL "\t<models>\n";
    printf OUTFL "\t\t<model value=\"ONROAD\"/>\n";
    printf OUTFL "\t</models>\n";
@@ -1593,7 +1623,7 @@ sub VV_writeRunSpec
    printf OUTFL "\t<offroadvehiclesccs>\n";
    printf OUTFL "\t</offroadvehiclesccs>\n";
 
-   printf OUTFL "\t<roadtypes separateramps=\"false\">\n";
+   printf OUTFL "\t<roadtypes>\n";
    printf OUTFL "\t\t<roadtype roadtypeid=\"1\" roadtypename=\"Off-Network\" modelCombination=\"M1\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"2\" roadtypename=\"Rural Restricted Access\"/>\n";
    #printf OUTFL "\t\t<roadtype roadtypeid=\"3\" roadtypename=\"Rural Unrestricted Access\"/>\n";
@@ -1699,12 +1729,22 @@ sub vehsel
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"53\" sourcetypename=\"Single Unit Long-haul Truck\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"54\" sourcetypename=\"Motor Home\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"61\" sourcetypename=\"Combination Short-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"3\" fueltypedesc=\"Compressed Natural Gas (CNG)\" sourcetypeid=\"62\" sourcetypename=\"Combination Long-haul Truck\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/> \n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"31\" sourcetypename=\"Passenger Truck\" />\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"5\" fueltypedesc=\"Ethanol (E-85)\" sourcetypeid=\"32\" sourcetypename=\"Light Commercial Truck\"/>\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"21\" sourcetypename=\"Passenger Car\"/> \n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"31\" sourcetypename=\"Passenger Truck\" />\n";
    printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"32\" sourcetypename=\"Light Commercial Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"41\" sourcetypename=\"Other Buses\"/> \n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"42\" sourcetypename=\"Transit Bus\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"43\" sourcetypename=\"School Bus\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"51\" sourcetypename=\"Refuse Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"52\" sourcetypename=\"Single Unit Short-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"53\" sourcetypename=\"Single Unit Long-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"54\" sourcetypename=\"Motor Home\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"61\" sourcetypename=\"Combination Short-haul Truck\"/>\n";
+   printf OUTFL "\t\t<onroadvehicleselection fueltypeid=\"9\" fueltypedesc=\"Electricity\" sourcetypeid=\"62\" sourcetypename=\"Combination Long-haul Truck\"/>\n";
    printf OUTFL "\t</onroadvehicleselections>\n";
 }  # end vehsel subroutine
 
@@ -1770,8 +1810,9 @@ sub dataImporter
 sub rspend
 {
    printf OUTFL "\t<internalcontrolstrategies>\n";
-
-   printf OUTFL "\t<internalcontrolstrategy classname=\"gov.epa.otaq.moves.master.implementation.ghg.internalcontrolstrategies.rateofprogress.RateOfProgressStrategy\"><![CDATA[ useParameters	No ]]></internalcontrolstrategy>\n";
+   printf OUTFL "\t<internalcontrolstrategy classname=\"gov.epa.otaq.moves.master.implementation.ghg.internalcontrolstrategies.rateofprogress.RateOfProgressStrategy\"><![CDATA[\n";
+   printf OUTFL "useParameters	No\n";
+   printf OUTFL "]]></internalcontrolstrategy>\n";
    printf OUTFL "\t</internalcontrolstrategies>\n";
    printf OUTFL "\t<inputdatabase servername=\"\" databasename=\"\" description=\"\"/>\n";
    printf OUTFL "\t<uncertaintyparameters uncertaintymodeenabled=\"false\" numberofrunspersimulation=\"0\" numberofsimulations=\"0\"/>\n";
@@ -1780,6 +1821,7 @@ sub rspend
    printf OUTFL "\t<outputemissionsbreakdownselection>\n";
    printf OUTFL "\t\t<modelyear selected=\"false\"/>\n";
    printf OUTFL "\t\t<fueltype selected=\"true\"/>\n";
+   printf OUTFL "\t\t<fuelsubtype selected=\"false\"/>\n";
    printf OUTFL "\t\t<emissionprocess selected=\"true\"/>\n";
    printf OUTFL "\t\t<onroadoffroad selected=\"true\"/>\n";
    printf OUTFL "\t\t<roadtype selected=\"true\"/>\n";
@@ -1800,12 +1842,11 @@ sub rspend
    printf OUTFL "\t<outputsho value=\"false\"/>\n";
    printf OUTFL "\t<outputsh value=\"false\"/>\n";
    printf OUTFL "\t<outputshp value=\"false\"/>\n";
-   printf OUTFL "\t<outputshidling value=\"false\"/>\n";
-   printf OUTFL "\t<outputstarts value=\"false\"/>\n";
-   printf OUTFL "\t<outputpopulation value=\"false\"/>\n";
+   printf OUTFL "\t<outputshidling value=\"true\"/>\n";
+   printf OUTFL "\t<outputstarts value=\"true\"/>\n";
+   printf OUTFL "\t<outputpopulation value=\"true\"/>\n";
    printf OUTFL "\t<databaseselections>\n";
    printf OUTFL "\t\t<databaseselection servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$scenarioDB."_in";
-   printf OUTFL "\t\t<databaseselection servername=\"%s\" databasename=\"nonoxadj_moves3\" description=\"\"/>\n",$dbhost;
    printf OUTFL "\t</databaseselections>\n";
    printf OUTFL "\t<scaleinputdatabase servername=\"%s\" databasename=\"%s\" description=\"\"/>\n",$dbhost,$repCDB[$cntyidx];
    printf OUTFL "\t<pmsize value=\"0\"/>\n";
@@ -1822,6 +1863,7 @@ sub rspend
    printf OUTFL "\t<generatordatabase shouldsave=\"false\" servername=\"\" databasename=\"\" description=\"\"/>\n";
    printf OUTFL	"\t\t<donotperformfinalaggregation selected=\"false\"/>\n";
    printf OUTFL "\t<lookuptableflags scenarioid=\"%s\" truncateoutput=\"true\" truncateactivity=\"true\" truncatebaserates=\"true\"/>\n",$scenarioID;
+   printf OUTFL "\t<skipdomaindatabasevalidation selected=\"true\"/>\n";
 
    printf OUTFL "</runspec>\n";
 
