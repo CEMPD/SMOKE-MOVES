@@ -1,8 +1,8 @@
 # SMOKE-MOVES
 
-SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES3 or MOVES4 as inputs to SMOKE. [Section 3.2](https://www.cmascenter.org/smoke/documentation/4.9/html/ch03s02.html) of the SMOKE User's Manual describes the various scripts and files that make up SMOKE-MOVES.
+SMOKE-MOVES is a set of methodologies and software tools to help use output from MOVES3, MOVES4, or MOVES5 as inputs to SMOKE. [Section 3.2](https://www.cmascenter.org/smoke/documentation/4.9/html/ch03s02.html) of the SMOKE User's Manual describes the various scripts and files that make up SMOKE-MOVES.
 
-The current version of SMOKE-MOVES creates run specification files designed for use in MOVES4 (through MOVES4.0.1).
+The current version of SMOKE-MOVES creates run specification files designed for use in MOVES4 (through MOVES4.0.1). These run specification files should also work with MOVES5 with no modifications.
 
 To use SMOKE-MOVES with MOVES3 (through MOVES3.0.3), make sure to download the version tagged as "[MOVES3](https://github.com/CEMPD/SMOKE-MOVES/archive/refs/tags/MOVES3.zip)".
 
@@ -15,7 +15,7 @@ For information on installing MOVES2014a on Linux, read the [wiki page](https://
 SMOKE-MOVES can be downloaded as a zip archive, for the version of MOVES you are using:
 
 - [MOVES3](https://github.com/CEMPD/SMOKE-MOVES/archive/refs/tags/MOVES3.zip)
-- [MOVES4](https://github.com/CEMPD/SMOKE-MOVES/archive/master.zip)
+- [MOVES4 / MOVES5](https://github.com/CEMPD/SMOKE-MOVES/archive/master.zip)
 
 This package assumes a base directory of `/opt/SMOKE-MOVES/`. Update the following input files with your installation location:
 
