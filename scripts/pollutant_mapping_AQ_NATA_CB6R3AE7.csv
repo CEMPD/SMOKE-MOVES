@@ -65,6 +65,7 @@
 88,"NonHAPTOG","EVP_NHTOG","mass","12 13"
 88,"NonHAPTOG","RFL_NHTOG","mass","18 19"
 90,"Atmospheric CO2","CO2_INV","mass",
+91,"Total Energy Consumption","TTL_ENERGY","energy",
 100,"Primary Exhaust PM10  - Total","PM10","mass",
 106,"Primary PM10 - Brakewear Particulate","BRAKEPM10","mass",
 107,"Primary PM10 - Tirewear Particulate","TIREPM10","mass",
@@ -120,3 +121,19 @@
 2558,"CB6AE7_SOAALK","SOAALK","gmole
 2560,"CB6AE7_XYLMN","XYLMN","gmole
 2561,"CB6AE7_IVOC","IVOC","gmole
+131,"Octachlorodibenzo-p-dioxin","DF_3268879",mass
+132,"1,2,3,4,6,7,8-Heptachlorodibenzo-p-Dioxin","DF_35822469",mass
+133,"Octachlorodibenzofuran","DF_39001020",mass
+134,"1,2,3,4,7,8-Hexachlorodibenzo-p-Dioxin","DF_39227286",mass
+135,"1,2,3,7,8-Pentachlorodibenzo-p-Dioxin","DF_40321764",mass
+136,"2,3,7,8-Tetrachlorodibenzofuran","DF_51207319",mass
+137,"1,2,3,4,7,8,9-Heptachlorodibenzofuran","DF_55673897",mass
+138,"2,3,4,7,8-Pentachlorodibenzofuran","DF_57117314",mass
+139,"1,2,3,7,8-Pentachlorodibenzofuran","DF_57117416",mass
+140,"1,2,3,6,7,8-Hexachlorodibenzofuran","DF_57117449",mass
+141,"1,2,3,6,7,8-Hexachlorodibenzo-p-Dioxin","DF_57653857",mass
+142,"2,3,7,8-Tetrachlorodibenzo-p-Dioxin","DF_1746016",mass
+143,"2,3,4,6,7,8-Hexachlorodibenzofuran","DF_60851345",mass
+144,"1,2,3,4,6,7,8-Heptachlorodibenzofuran","DF_67562394",mass
+145,"1,2,3,4,7,8-Hexachlorodibenzofuran","DF_70648269",mass
+146,"1,2,3,7,8,9-Hexachlorodibenzofuran","DF_72918219",mass

@@ -44,7 +44,7 @@
 88,"NonHAPTOG","EVP_NHTOG","mass","12 13"
 88,"NonHAPTOG","RFL_NHTOG","mass","18 19"
 90,"Atmospheric CO2","CO2_INV","mass"
-91,"Total Energy Consumption","TOTAL_ENERGY_CONSUMPTION","energy"
+91,"Total Energy Consumption","TTL_ENERGY","energy"
 100,"Primary Exhaust PM10  - Total","PM10","mass"
 101,"Primary PM10 - Organic Carbon","POC10","mass"
 102,"Primary PM10 - Elemental Carbon","PEC10","mass"
